@@ -10,6 +10,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
+import { useToastFlash } from '@/hooks/use-toast-flash';
 import AppLayout from '@/layouts/app-layout';
 import { Head, Link, useForm } from '@inertiajs/react';
 import { FormEvent } from 'react';
@@ -27,6 +28,8 @@ interface Props {
 }
 
 export default function CreateUserPage({ roles }: Props) {
+    useToastFlash();
+
     const { data, setData, post, processing, errors } = useForm({
         name: '',
         email: '',

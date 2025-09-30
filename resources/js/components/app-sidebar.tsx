@@ -101,8 +101,18 @@ export function AppSidebar() {
     if (user?.role?.slug === 'admin') {
         mainNavItems.push({
             title: 'Administração',
-            href: '/admin/users',
             icon: Settings,
+            items: [
+                {
+                    title: 'Usuários',
+                    href: '/admin/users',
+                },
+                // Aqui você pode adicionar mais itens do menu admin
+                // {
+                //     title: 'Funções',
+                //     href: '/admin/roles',
+                // },
+            ],
         });
     }
 

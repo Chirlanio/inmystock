@@ -1,4 +1,5 @@
 import HeadingSmall from '@/components/heading-small';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -10,9 +11,10 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
+import { useToastFlash } from '@/hooks/use-toast-flash';
 import AppLayout from '@/layouts/app-layout';
 import { Head, Link, useForm } from '@inertiajs/react';
-import { FormEvent } from 'react';
+import { FormEvent, useState } from 'react';
 
 interface Role {
     id: number;
@@ -36,17 +38,36 @@ interface Props {
 }
 
 export default function EditUserPage({ user, roles }: Props) {
+    useToastFlash();
+
     const { data, setData, put, processing, errors } = useForm({
         name: user.name,
         email: user.email,
         role_id: user.role_id?.toString() || '',
         password: '',
         password_confirmation: '',
+        avatar: null as File | null,
     });
+
+    const [avatarPreview, setAvatarPreview] = useState<string | null>(
+        user.avatar ? `/storage/${user.avatar}` : null
+    );
 
     const handleSubmit = (e: FormEvent) => {
         e.preventDefault();
         put(`/admin/users/${user.id}`);
+    };
+
+    const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            setData('avatar', file);
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                setAvatarPreview(reader.result as string);
+            };
+            reader.readAsDataURL(file);
+        }
     };
 
     return (
@@ -120,6 +141,37 @@ export default function EditUserPage({ user, roles }: Props) {
                                 </Select>
                                 {errors.role_id && (
                                     <p className="text-sm text-destructive">{errors.role_id}</p>
+                                )}
+                            </div>
+
+                            <div className="space-y-2">
+                                <Label htmlFor="avatar">Foto do Usuário</Label>
+                                <div className="flex items-center gap-4">
+                                    <Avatar className="h-20 w-20">
+                                        <AvatarImage src={avatarPreview || undefined} alt={user.name} />
+                                        <AvatarFallback>
+                                            {user.name
+                                                .split(' ')
+                                                .map((n) => n[0])
+                                                .join('')
+                                                .toUpperCase()
+                                                .slice(0, 2)}
+                                        </AvatarFallback>
+                                    </Avatar>
+                                    <div className="flex-1">
+                                        <Input
+                                            id="avatar"
+                                            type="file"
+                                            accept="image/*"
+                                            onChange={handleAvatarChange}
+                                        />
+                                        <p className="mt-1 text-xs text-muted-foreground">
+                                            Deixe em branco para manter a foto atual
+                                        </p>
+                                    </div>
+                                </div>
+                                {errors.avatar && (
+                                    <p className="text-sm text-destructive">{errors.avatar}</p>
                                 )}
                             </div>
 

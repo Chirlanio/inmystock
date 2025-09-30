@@ -19,6 +19,18 @@ class UserController extends Controller
      */
     public function index(Request $request): Response
     {
+        $sortColumn = $request->get('sort', 'created_at');
+        $sortDirection = $request->get('direction', 'desc');
+
+        // Validate sort column to prevent SQL injection
+        $allowedColumns = ['id', 'name', 'email', 'created_at'];
+        if (!in_array($sortColumn, $allowedColumns)) {
+            $sortColumn = 'created_at';
+        }
+
+        // Validate sort direction
+        $sortDirection = in_array($sortDirection, ['asc', 'desc']) ? $sortDirection : 'desc';
+
         $users = User::with('role')
             ->when($request->search, function ($query, $search) {
                 return $query->where(function ($q) use ($search) {
@@ -29,7 +41,7 @@ class UserController extends Controller
             ->when($request->role, function ($query, $roleId) {
                 return $query->where('role_id', $roleId);
             })
-            ->latest()
+            ->orderBy($sortColumn, $sortDirection)
             ->paginate(15)
             ->withQueryString();
 
@@ -38,7 +50,7 @@ class UserController extends Controller
         return Inertia::render('admin/users/index', [
             'users' => $users,
             'roles' => $roles,
-            'filters' => $request->only(['search', 'role']),
+            'filters' => $request->only(['search', 'role', 'sort', 'direction']),
         ]);
     }
 
@@ -64,9 +76,14 @@ class UserController extends Controller
             'email' => 'required|string|email|max:255|unique:users',
             'password' => ['required', 'confirmed', Password::defaults()],
             'role_id' => 'required|exists:roles,id',
+            'avatar' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
 
         $validated['password'] = Hash::make($validated['password']);
+
+        if ($request->hasFile('avatar')) {
+            $validated['avatar'] = $request->file('avatar')->store('avatars', 'public');
+        }
 
         User::create($validated);
 
@@ -97,6 +114,7 @@ class UserController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users,email,' . $user->id,
             'role_id' => 'required|exists:roles,id',
+            'avatar' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
 
         if ($request->filled('password')) {
@@ -104,6 +122,14 @@ class UserController extends Controller
                 'password' => ['required', 'confirmed', Password::defaults()],
             ]);
             $validated['password'] = Hash::make($request->password);
+        }
+
+        if ($request->hasFile('avatar')) {
+            // Delete old avatar if exists
+            if ($user->avatar) {
+                \Storage::disk('public')->delete($user->avatar);
+            }
+            $validated['avatar'] = $request->file('avatar')->store('avatars', 'public');
         }
 
         $user->update($validated);
