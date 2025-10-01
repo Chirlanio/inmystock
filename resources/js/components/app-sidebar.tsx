@@ -22,7 +22,9 @@ import {
     Users,
     ClipboardList,
     Settings,
-    Shield
+    Shield,
+    ClipboardCheck,
+    MapPin
 } from 'lucide-react';
 import AppLogo from './app-logo';
 
@@ -88,10 +90,28 @@ export function AppSidebar() {
         });
     }
 
-    // Audit - visible to users with audits.view permission
+    // Stock Audits - visible to users with inventory.view permission
+    if (user?.role?.permissions?.includes('inventory.view')) {
+        mainNavItems.push({
+            title: 'Auditorias de Estoque',
+            href: '/stock-audits',
+            icon: ClipboardCheck,
+        });
+    }
+
+    // Areas - visible to users with inventory.view permission
+    if (user?.role?.permissions?.includes('inventory.view')) {
+        mainNavItems.push({
+            title: 'Áreas',
+            href: '/areas',
+            icon: MapPin,
+        });
+    }
+
+    // Audit Logs - visible to users with audits.view permission
     if (user?.role?.permissions?.includes('audits.view')) {
         mainNavItems.push({
-            title: 'Auditoria',
+            title: 'Logs de Auditoria',
             href: '/settings/audit',
             icon: Shield,
         });
