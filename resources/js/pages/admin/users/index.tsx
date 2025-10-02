@@ -25,28 +25,12 @@ import {
 import { useToastFlash } from '@/hooks/use-toast-flash';
 import AppLayout from '@/layouts/app-layout';
 import { PaginatedData } from '@/types';
-import { Head, Link, router, useForm } from '@inertiajs/react';
+import { Head, router, useForm } from '@inertiajs/react';
 import { PlusCircle, Search } from 'lucide-react';
 import { FormEvent, useEffect, useState } from 'react';
 
-interface Role {
-    id: number;
-    name: string;
-    slug: string;
-    description: string | null;
-    level: number;
-}
-
-interface User {
-    id: number;
-    name: string;
-    email: string;
-    email_verified_at: string | null;
-    role_id: number | null;
-    role?: Role;
-    created_at: string;
-    updated_at: string;
-}
+// Use Role and User from '@/types' to ensure type compatibility
+import type { Role, User } from '@/types';
 
 interface Props {
     users: PaginatedData<User>;
@@ -369,7 +353,7 @@ export default function UsersIndexPage({ users, roles, filters }: Props) {
                 </Card>
 
                 <Dialog open={isCreateModalOpen} onOpenChange={setIsCreateModalOpen}>
-                    <DialogContent className="max-w-2xl">
+                    <DialogContent>
                         <DialogHeader>
                             <DialogTitle>Criar Novo Usuário</DialogTitle>
                             <DialogDescription>
@@ -377,61 +361,95 @@ export default function UsersIndexPage({ users, roles, filters }: Props) {
                             </DialogDescription>
                         </DialogHeader>
 
-                        <form onSubmit={handleCreateUser} className="space-y-4">
-                            <div className="space-y-2">
-                                <Label htmlFor="name">Nome</Label>
-                                <Input
-                                    id="name"
-                                    value={data.name}
-                                    onChange={(e) => setData('name', e.target.value)}
-                                    required
-                                />
-                                {errors.name && (
-                                    <p className="text-sm text-destructive">{errors.name}</p>
-                                )}
-                            </div>
+                        <form onSubmit={handleCreateUser} className="space-y-6">
+                            <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+                                <div className="space-y-2">
+                                    <Label htmlFor="name">Nome</Label>
+                                    <Input
+                                        id="name"
+                                        value={data.name}
+                                        onChange={(e) => setData('name', e.target.value)}
+                                        required
+                                    />
+                                    {errors.name && (
+                                        <p className="text-sm text-destructive">{errors.name}</p>
+                                    )}
+                                </div>
 
-                            <div className="space-y-2">
-                                <Label htmlFor="email">Email</Label>
-                                <Input
-                                    id="email"
-                                    type="email"
-                                    value={data.email}
-                                    onChange={(e) => setData('email', e.target.value)}
-                                    required
-                                />
-                                {errors.email && (
-                                    <p className="text-sm text-destructive">{errors.email}</p>
-                                )}
-                            </div>
+                                <div className="space-y-2">
+                                    <Label htmlFor="email">Email</Label>
+                                    <Input
+                                        id="email"
+                                        type="email"
+                                        value={data.email}
+                                        onChange={(e) => setData('email', e.target.value)}
+                                        required
+                                    />
+                                    {errors.email && (
+                                        <p className="text-sm text-destructive">{errors.email}</p>
+                                    )}
+                                </div>
 
-                            <div className="space-y-2">
-                                <Label htmlFor="role">Função</Label>
-                                <Select
-                                    value={data.role_id}
-                                    onValueChange={(value) => setData('role_id', value)}
-                                >
-                                    <SelectTrigger>
-                                        <SelectValue placeholder="Selecione uma função" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {roles.map((role) => (
-                                            <SelectItem key={role.id} value={role.id.toString()}>
-                                                <div className="flex flex-col">
-                                                    <span className="font-medium">{role.name}</span>
-                                                    {role.description && (
-                                                        <span className="text-xs text-muted-foreground">
-                                                            {role.description}
-                                                        </span>
-                                                    )}
-                                                </div>
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                                {errors.role_id && (
-                                    <p className="text-sm text-destructive">{errors.role_id}</p>
-                                )}
+                                <div className="space-y-2">
+                                    <Label htmlFor="role">Função</Label>
+                                    <Select
+                                        value={data.role_id}
+                                        onValueChange={(value) => setData('role_id', value)}
+                                    >
+                                        <SelectTrigger>
+                                            <SelectValue placeholder="Selecione uma função" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {roles.map((role) => (
+                                                <SelectItem key={role.id} value={role.id.toString()}>
+                                                    <div className="flex flex-col">
+                                                        <span className="font-medium">{role.name}</span>
+                                                        {role.description && (
+                                                            <span className="text-xs text-muted-foreground">
+                                                                {role.description}
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                    {errors.role_id && (
+                                        <p className="text-sm text-destructive">{errors.role_id}</p>
+                                    )}
+                                </div>
+
+                                <div className="space-y-2">
+                                    <Label htmlFor="password">Senha</Label>
+                                    <Input
+                                        id="password"
+                                        type="password"
+                                        value={data.password}
+                                        onChange={(e) => setData('password', e.target.value)}
+                                        required
+                                    />
+                                    {errors.password && (
+                                        <p className="text-sm text-destructive">{errors.password}</p>
+                                    )}
+                                </div>
+
+                                <div className="space-y-2">
+                                    <Label htmlFor="password_confirmation">Confirmar Senha</Label>
+                                    <Input
+                                        id="password_confirmation"
+                                        type="password"
+                                        value={data.password_confirmation}
+                                        onChange={(e) =>
+                                            setData('password_confirmation', e.target.value)
+                                        }
+                                        required
+                                    />
+                                    {errors.password_confirmation && (
+                                        <p className="text-sm text-destructive">
+                                            {errors.password_confirmation}
+                                        </p>
+                                    )}
+                                </div>
                             </div>
 
                             <div className="space-y-2">
@@ -456,38 +474,6 @@ export default function UsersIndexPage({ users, roles, filters }: Props) {
                                 )}
                             </div>
 
-                            <div className="space-y-2">
-                                <Label htmlFor="password">Senha</Label>
-                                <Input
-                                    id="password"
-                                    type="password"
-                                    value={data.password}
-                                    onChange={(e) => setData('password', e.target.value)}
-                                    required
-                                />
-                                {errors.password && (
-                                    <p className="text-sm text-destructive">{errors.password}</p>
-                                )}
-                            </div>
-
-                            <div className="space-y-2">
-                                <Label htmlFor="password_confirmation">Confirmar Senha</Label>
-                                <Input
-                                    id="password_confirmation"
-                                    type="password"
-                                    value={data.password_confirmation}
-                                    onChange={(e) =>
-                                        setData('password_confirmation', e.target.value)
-                                    }
-                                    required
-                                />
-                                {errors.password_confirmation && (
-                                    <p className="text-sm text-destructive">
-                                        {errors.password_confirmation}
-                                    </p>
-                                )}
-                            </div>
-
                             <DialogFooter>
                                 <Button
                                     variant="outline"
@@ -505,7 +491,7 @@ export default function UsersIndexPage({ users, roles, filters }: Props) {
                 </Dialog>
 
                 <Dialog open={isEditModalOpen} onOpenChange={setIsEditModalOpen}>
-                    <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+                    <DialogContent className="max-h-[90vh] overflow-y-auto">
                         <DialogHeader>
                             <DialogTitle>Editar Usuário</DialogTitle>
                             <DialogDescription>
@@ -513,61 +499,63 @@ export default function UsersIndexPage({ users, roles, filters }: Props) {
                             </DialogDescription>
                         </DialogHeader>
 
-                        <form onSubmit={handleUpdateUser} className="space-y-4">
-                            <div className="space-y-2">
-                                <Label htmlFor="edit-name">Nome</Label>
-                                <Input
-                                    id="edit-name"
-                                    value={editData.name}
-                                    onChange={(e) => setEditData('name', e.target.value)}
-                                    required
-                                />
-                                {editErrors.name && (
-                                    <p className="text-sm text-destructive">{editErrors.name}</p>
-                                )}
-                            </div>
+                        <form onSubmit={handleUpdateUser} className="space-y-6">
+                            <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+                                <div className="space-y-2">
+                                    <Label htmlFor="edit-name">Nome</Label>
+                                    <Input
+                                        id="edit-name"
+                                        value={editData.name}
+                                        onChange={(e) => setEditData('name', e.target.value)}
+                                        required
+                                    />
+                                    {editErrors.name && (
+                                        <p className="text-sm text-destructive">{editErrors.name}</p>
+                                    )}
+                                </div>
 
-                            <div className="space-y-2">
-                                <Label htmlFor="edit-email">Email</Label>
-                                <Input
-                                    id="edit-email"
-                                    type="email"
-                                    value={editData.email}
-                                    onChange={(e) => setEditData('email', e.target.value)}
-                                    required
-                                />
-                                {editErrors.email && (
-                                    <p className="text-sm text-destructive">{editErrors.email}</p>
-                                )}
-                            </div>
+                                <div className="space-y-2">
+                                    <Label htmlFor="edit-email">Email</Label>
+                                    <Input
+                                        id="edit-email"
+                                        type="email"
+                                        value={editData.email}
+                                        onChange={(e) => setEditData('email', e.target.value)}
+                                        required
+                                    />
+                                    {editErrors.email && (
+                                        <p className="text-sm text-destructive">{editErrors.email}</p>
+                                    )}
+                                </div>
 
-                            <div className="space-y-2">
-                                <Label htmlFor="edit-role">Função</Label>
-                                <Select
-                                    value={editData.role_id}
-                                    onValueChange={(value) => setEditData('role_id', value)}
-                                >
-                                    <SelectTrigger>
-                                        <SelectValue placeholder="Selecione uma função" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {roles.map((role) => (
-                                            <SelectItem key={role.id} value={role.id.toString()}>
-                                                <div className="flex flex-col">
-                                                    <span className="font-medium">{role.name}</span>
-                                                    {role.description && (
-                                                        <span className="text-xs text-muted-foreground">
-                                                            {role.description}
-                                                        </span>
-                                                    )}
-                                                </div>
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                                {editErrors.role_id && (
-                                    <p className="text-sm text-destructive">{editErrors.role_id}</p>
-                                )}
+                                <div className="space-y-2">
+                                    <Label htmlFor="edit-role">Função</Label>
+                                    <Select
+                                        value={editData.role_id}
+                                        onValueChange={(value) => setEditData('role_id', value)}
+                                    >
+                                        <SelectTrigger>
+                                            <SelectValue placeholder="Selecione uma função" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {roles.map((role) => (
+                                                <SelectItem key={role.id} value={role.id.toString()}>
+                                                    <div className="flex flex-col">
+                                                        <span className="font-medium">{role.name}</span>
+                                                        {role.description && (
+                                                            <span className="text-xs text-muted-foreground">
+                                                                {role.description}
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                    {editErrors.role_id && (
+                                        <p className="text-sm text-destructive">{editErrors.role_id}</p>
+                                    )}
+                                </div>
                             </div>
 
                             <div className="space-y-2">
@@ -610,7 +598,7 @@ export default function UsersIndexPage({ users, roles, filters }: Props) {
                                     Deixe em branco se não quiser alterar a senha
                                 </p>
 
-                                <div className="space-y-4">
+                                <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                                     <div className="space-y-2">
                                         <Label htmlFor="edit-password">Nova Senha</Label>
                                         <Input

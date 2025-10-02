@@ -14,9 +14,29 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // User::factory(10)->create();
+        // Seed roles and companies first
+        $this->call([
+            RoleSeeder::class,
+            CompanySeeder::class,
+        ]);
 
-        User::firstOrCreate(
+        // Get first company
+        $company = \App\Models\Company::first();
+
+        // Create test users with different roles
+        $adminUser = User::firstOrCreate(
+            ['email' => 'admin@example.com'],
+            [
+                'name' => 'Admin User',
+                'password' => Hash::make('password'),
+                'email_verified_at' => now(),
+            ]
+        );
+        $adminUser->role()->associate(\App\Models\Role::where('slug', 'admin')->first());
+        $adminUser->company()->associate($company);
+        $adminUser->save();
+
+        $testUser = User::firstOrCreate(
             ['email' => 'test@example.com'],
             [
                 'name' => 'Test User',
@@ -24,5 +44,8 @@ class DatabaseSeeder extends Seeder
                 'email_verified_at' => now(),
             ]
         );
+        $testUser->role()->associate(\App\Models\Role::where('slug', 'viewer')->first());
+        $testUser->company()->associate($company);
+        $testUser->save();
     }
 }

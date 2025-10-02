@@ -61,89 +61,91 @@ export default function CreateUserPage({ roles }: Props) {
                 <Card>
                     <CardContent className="pt-6">
                         <form onSubmit={handleSubmit} className="space-y-6">
-                            <div className="space-y-2">
-                                <Label htmlFor="name">Nome</Label>
-                                <Input
-                                    id="name"
-                                    value={data.name}
-                                    onChange={(e) => setData('name', e.target.value)}
-                                    required
-                                />
-                                {errors.name && (
-                                    <p className="text-sm text-destructive">{errors.name}</p>
-                                )}
-                            </div>
+                            <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+                                <div className="space-y-2">
+                                    <Label htmlFor="name">Nome</Label>
+                                    <Input
+                                        id="name"
+                                        value={data.name}
+                                        onChange={(e) => setData('name', e.target.value)}
+                                        required
+                                    />
+                                    {errors.name && (
+                                        <p className="text-sm text-destructive">{errors.name}</p>
+                                    )}
+                                </div>
 
-                            <div className="space-y-2">
-                                <Label htmlFor="email">Email</Label>
-                                <Input
-                                    id="email"
-                                    type="email"
-                                    value={data.email}
-                                    onChange={(e) => setData('email', e.target.value)}
-                                    required
-                                />
-                                {errors.email && (
-                                    <p className="text-sm text-destructive">{errors.email}</p>
-                                )}
-                            </div>
+                                <div className="space-y-2">
+                                    <Label htmlFor="email">Email</Label>
+                                    <Input
+                                        id="email"
+                                        type="email"
+                                        value={data.email}
+                                        onChange={(e) => setData('email', e.target.value)}
+                                        required
+                                    />
+                                    {errors.email && (
+                                        <p className="text-sm text-destructive">{errors.email}</p>
+                                    )}
+                                </div>
 
-                            <div className="space-y-2">
-                                <Label htmlFor="role">Função</Label>
-                                <Select value={data.role_id} onValueChange={(value) => setData('role_id', value)}>
-                                    <SelectTrigger>
-                                        <SelectValue placeholder="Selecione uma função" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {roles.map((role) => (
-                                            <SelectItem key={role.id} value={role.id.toString()}>
-                                                <div className="flex flex-col">
-                                                    <span className="font-medium">{role.name}</span>
-                                                    {role.description && (
-                                                        <span className="text-xs text-muted-foreground">
-                                                            {role.description}
-                                                        </span>
-                                                    )}
-                                                </div>
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                                {errors.role_id && (
-                                    <p className="text-sm text-destructive">{errors.role_id}</p>
-                                )}
-                            </div>
+                                <div className="space-y-2">
+                                    <Label htmlFor="role">Função</Label>
+                                    <Select value={data.role_id} onValueChange={(value) => setData('role_id', value)}>
+                                        <SelectTrigger>
+                                            <SelectValue placeholder="Selecione uma função" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {roles.map((role) => (
+                                                <SelectItem key={role.id} value={role.id.toString()}>
+                                                    <div className="flex flex-col">
+                                                        <span className="font-medium">{role.name}</span>
+                                                        {role.description && (
+                                                            <span className="text-xs text-muted-foreground">
+                                                                {role.description}
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                    {errors.role_id && (
+                                        <p className="text-sm text-destructive">{errors.role_id}</p>
+                                    )}
+                                </div>
 
-                            <div className="space-y-2">
-                                <Label htmlFor="password">Senha</Label>
-                                <Input
-                                    id="password"
-                                    type="password"
-                                    value={data.password}
-                                    onChange={(e) => setData('password', e.target.value)}
-                                    required
-                                />
-                                {errors.password && (
-                                    <p className="text-sm text-destructive">{errors.password}</p>
-                                )}
-                            </div>
+                                <div className="space-y-2">
+                                    <Label htmlFor="password">Senha</Label>
+                                    <Input
+                                        id="password"
+                                        type="password"
+                                        value={data.password}
+                                        onChange={(e) => setData('password', e.target.value)}
+                                        required
+                                    />
+                                    {errors.password && (
+                                        <p className="text-sm text-destructive">{errors.password}</p>
+                                    )}
+                                </div>
 
-                            <div className="space-y-2">
-                                <Label htmlFor="password_confirmation">Confirmar Senha</Label>
-                                <Input
-                                    id="password_confirmation"
-                                    type="password"
-                                    value={data.password_confirmation}
-                                    onChange={(e) =>
-                                        setData('password_confirmation', e.target.value)
-                                    }
-                                    required
-                                />
-                                {errors.password_confirmation && (
-                                    <p className="text-sm text-destructive">
-                                        {errors.password_confirmation}
-                                    </p>
-                                )}
+                                <div className="space-y-2">
+                                    <Label htmlFor="password_confirmation">Confirmar Senha</Label>
+                                    <Input
+                                        id="password_confirmation"
+                                        type="password"
+                                        value={data.password_confirmation}
+                                        onChange={(e) =>
+                                            setData('password_confirmation', e.target.value)
+                                        }
+                                        required
+                                    />
+                                    {errors.password_confirmation && (
+                                        <p className="text-sm text-destructive">
+                                            {errors.password_confirmation}
+                                        </p>
+                                    )}
+                                </div>
                             </div>
 
                             <div className="flex justify-end gap-4">

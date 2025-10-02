@@ -1,7 +1,9 @@
 import { Head, Link } from '@inertiajs/react';
-import AppSidebarLayout from '@/layouts/app-sidebar-layout';
+import AppLayout from '@/layouts/app-layout';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Card, CardContent } from '@/components/ui/card';
+import HeadingSmall from '@/components/heading-small';
 import { ArrowLeft, Edit, Plus } from 'lucide-react';
 
 interface StockAudit {
@@ -37,82 +39,84 @@ const statusColors = {
 
 export default function Show({ audit }: Props) {
   return (
-    <AppSidebarLayout>
+    <AppLayout>
       <Head title={audit.title} />
 
-      <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <Link href="/stock-audits">
-              <Button variant="ghost" size="icon">
-                <ArrowLeft className="h-4 w-4" />
-              </Button>
-            </Link>
-            <div>
-              <h1 className="text-3xl font-bold">{audit.title}</h1>
-              <p className="text-muted-foreground">Código: {audit.code}</p>
-            </div>
+      <div className="space-y-6 p-6">
+        <div className="flex items-center gap-4">
+          <Link href="/stock-audits">
+            <Button variant="ghost" size="icon">
+              <ArrowLeft className="h-4 w-4" />
+            </Button>
+          </Link>
+          <div className="flex-1">
+            <HeadingSmall
+              title={audit.title}
+              description={`Código: ${audit.code}`}
+            />
           </div>
           <div className="flex gap-2">
             {audit.status !== 'completed' && (
               <Link href={`/stock-audits/${audit.id}/edit`}>
-                <Button variant="outline">
-                  <Edit className="mr-2 h-4 w-4" />
+                <Button variant="outline" leftIcon={<Edit />}>
                   Editar
                 </Button>
               </Link>
             )}
             <Link href={`/stock-audits/${audit.id}/counts/create`}>
-              <Button>
-                <Plus className="mr-2 h-4 w-4" />
+              <Button leftIcon={<Plus />}>
                 Nova Contagem
               </Button>
             </Link>
           </div>
         </div>
 
-        <div className="grid gap-6">
-          <div className="rounded-lg border p-6 space-y-4">
-            <h2 className="text-xl font-semibold">Informações da Auditoria</h2>
-            <div className="grid gap-4 md:grid-cols-2">
-              <div>
-                <p className="text-sm text-muted-foreground">Status</p>
-                <Badge className={statusColors[audit.status]}>
-                  {audit.status === 'planned' && 'Planejada'}
-                  {audit.status === 'in_progress' && 'Em Andamento'}
-                  {audit.status === 'completed' && 'Concluída'}
-                  {audit.status === 'cancelled' && 'Cancelada'}
-                </Badge>
+        <Card>
+          <CardContent className="pt-6 space-y-6">
+            <div>
+              <h2 className="text-xl font-semibold mb-4">Informações da Auditoria</h2>
+              <div className="grid gap-4 md:grid-cols-2">
+                <div>
+                  <p className="text-sm text-muted-foreground">Status</p>
+                  <Badge className={statusColors[audit.status]}>
+                    {audit.status === 'planned' && 'Planejada'}
+                    {audit.status === 'in_progress' && 'Em Andamento'}
+                    {audit.status === 'completed' && 'Concluída'}
+                    {audit.status === 'cancelled' && 'Cancelada'}
+                  </Badge>
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Responsável</p>
+                  <p className="font-medium">{audit.responsible.name}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Data de Início</p>
+                  <p className="font-medium">
+                    {new Date(audit.start_date).toLocaleDateString('pt-BR')}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Contagens Requeridas</p>
+                  <p className="font-medium">{audit.required_counts}</p>
+                </div>
               </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Responsável</p>
-                <p className="font-medium">{audit.responsible.name}</p>
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Data de Início</p>
-                <p className="font-medium">
-                  {new Date(audit.start_date).toLocaleDateString('pt-BR')}
-                </p>
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Contagens Requeridas</p>
-                <p className="font-medium">{audit.required_counts}</p>
-              </div>
+              {audit.description && (
+                <div className="mt-4">
+                  <p className="text-sm text-muted-foreground">Descrição</p>
+                  <p className="mt-1">{audit.description}</p>
+                </div>
+              )}
             </div>
-            {audit.description && (
-              <div>
-                <p className="text-sm text-muted-foreground">Descrição</p>
-                <p className="mt-1">{audit.description}</p>
-              </div>
-            )}
-          </div>
+          </CardContent>
+        </Card>
 
-          <div className="rounded-lg border p-6 space-y-4">
-            <h2 className="text-xl font-semibold">
+        <Card>
+          <CardContent className="pt-6">
+            <h2 className="text-xl font-semibold mb-4">
               Contagens ({audit.stock_counts.length})
             </h2>
             {audit.stock_counts.length === 0 ? (
-              <p className="text-muted-foreground">Nenhuma contagem criada ainda.</p>
+              <p className="text-center text-muted-foreground py-8">Nenhuma contagem criada ainda.</p>
             ) : (
               <div className="space-y-2">
                 {audit.stock_counts.map((count) => (
@@ -132,9 +136,9 @@ export default function Show({ audit }: Props) {
                 ))}
               </div>
             )}
-          </div>
-        </div>
+          </CardContent>
+        </Card>
       </div>
-    </AppSidebarLayout>
+    </AppLayout>
   );
 }

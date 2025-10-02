@@ -15,6 +15,7 @@ import { type NavItem, type User } from '@/types';
 import { Link, usePage } from '@inertiajs/react';
 import {
     BookOpen,
+    Building2,
     Folder,
     LayoutGrid,
     Package,
@@ -126,12 +127,13 @@ export function AppSidebar() {
                 {
                     title: 'Usuários',
                     href: '/admin/users',
+                    icon: Users,
                 },
-                // Aqui você pode adicionar mais itens do menu admin
-                // {
-                //     title: 'Funções',
-                //     href: '/admin/roles',
-                // },
+                {
+                    title: 'Empresas',
+                    href: '/admin/companies',
+                    icon: Building2,
+                },
             ],
         });
     }

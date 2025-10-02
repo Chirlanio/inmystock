@@ -31,7 +31,9 @@ class UserController extends Controller
         // Validate sort direction
         $sortDirection = in_array($sortDirection, ['asc', 'desc']) ? $sortDirection : 'desc';
 
-        $users = User::with('role')
+        // Admin can see all users, bypass company scope
+        $users = User::withoutGlobalScopes()
+            ->with('role', 'company')
             ->when($request->search, function ($query, $search) {
                 return $query->where(function ($q) use ($search) {
                     $q->where('name', 'like', "%{$search}%")

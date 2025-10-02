@@ -39,7 +39,7 @@ export function UserViewModal({ user, open, onOpenChange }: UserViewModalProps) 
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="max-w-5xl max-h-[85vh] overflow-y-auto">
+            <DialogContent className="max-h-[85vh] overflow-y-auto">
                 <DialogHeader>
                     <DialogTitle>Informações do Usuário</DialogTitle>
                     <DialogDescription>
@@ -71,7 +71,7 @@ export function UserViewModal({ user, open, onOpenChange }: UserViewModalProps) 
                     </div>
 
                     {/* Informações em Grid */}
-                    <div className="grid gap-4 rounded-lg border p-4">
+                    <div className="grid grid-cols-1 gap-4 rounded-lg border p-4 md:grid-cols-2 lg:grid-cols-3">
                         {/* ID */}
                         <div className="flex items-center gap-3">
                             <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-muted">
@@ -93,38 +93,6 @@ export function UserViewModal({ user, open, onOpenChange }: UserViewModalProps) 
                             <div>
                                 <p className="text-sm text-muted-foreground">Endereço de email</p>
                                 <p className="font-medium">{user.email}</p>
-                            </div>
-                        </div>
-
-                        {/* Função */}
-                        <div className="flex items-center gap-3">
-                            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-muted">
-                                <Shield className="h-5 w-5" />
-                            </div>
-                            <div className="flex-1">
-                                <p className="text-sm text-muted-foreground">Função no sistema</p>
-                                {user.role ? (
-                                    <div className="flex items-center gap-2">
-                                        <Badge
-                                            variant={getRoleBadgeVariant(user.role.level)}
-                                            className="font-medium"
-                                        >
-                                            {user.role.name}
-                                        </Badge>
-                                        <span className="text-sm text-muted-foreground">
-                                            Nível {user.role.level}
-                                        </span>
-                                    </div>
-                                ) : (
-                                    <p className="font-medium text-muted-foreground">
-                                        Sem função atribuída
-                                    </p>
-                                )}
-                                {user.role?.description && (
-                                    <p className="mt-1 text-sm text-muted-foreground">
-                                        {user.role.description}
-                                    </p>
-                                )}
                             </div>
                         </div>
 
@@ -175,6 +143,40 @@ export function UserViewModal({ user, open, onOpenChange }: UserViewModalProps) 
                             <div>
                                 <p className="text-sm text-muted-foreground">Última atualização</p>
                                 <p className="font-medium">{formatDate(user.updated_at)}</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Função - Largura Total */}
+                    <div className="rounded-lg border p-4">
+                        <div className="flex items-center gap-3">
+                            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-muted">
+                                <Shield className="h-5 w-5" />
+                            </div>
+                            <div className="flex-1">
+                                <p className="text-sm text-muted-foreground">Função no sistema</p>
+                                {user.role ? (
+                                    <div className="flex items-center gap-2">
+                                        <Badge
+                                            variant={getRoleBadgeVariant(user.role.level)}
+                                            className="font-medium"
+                                        >
+                                            {user.role.name}
+                                        </Badge>
+                                        <span className="text-sm text-muted-foreground">
+                                            Nível {user.role.level}
+                                        </span>
+                                    </div>
+                                ) : (
+                                    <p className="font-medium text-muted-foreground">
+                                        Sem função atribuída
+                                    </p>
+                                )}
+                                {user.role?.description && (
+                                    <p className="mt-1 text-sm text-muted-foreground">
+                                        {user.role.description}
+                                    </p>
+                                )}
                             </div>
                         </div>
                     </div>

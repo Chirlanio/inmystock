@@ -1,0 +1,34 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+
+class Company extends Model
+{
+    protected $fillable = [
+        'name',
+        'trade_name',
+        'document',
+        'email',
+        'phone',
+        'address',
+        'city',
+        'state',
+        'zip_code',
+        'active',
+    ];
+
+    protected $casts = [
+        'active' => 'boolean',
+    ];
+
+    /**
+     * Get the users for the company.
+     */
+    public function users(): HasMany
+    {
+        return $this->hasMany(User::class);
+    }
+}

@@ -42,6 +42,80 @@ export interface Role {
     updated_at: string;
 }
 
+export interface Company {
+    id: number;
+    name: string;
+    trade_name: string | null;
+    document: string;
+    email: string | null;
+    phone: string | null;
+    address: string | null;
+    city: string | null;
+    state: string | null;
+    zip_code: string | null;
+    active: boolean;
+    created_at: string;
+    updated_at: string;
+}
+
+export interface Area {
+    id: number;
+    company_id: number | null;
+    name: string;
+    location: string | null;
+    location_count: number;
+    code: string;
+    description: string | null;
+    active: boolean;
+    created_at: string;
+    updated_at: string;
+}
+
+export interface Supplier {
+    id: number;
+    company_id: number;
+    name: string;
+    code: string;
+    email: string | null;
+    phone: string | null;
+    address: string | null;
+    city: string | null;
+    state: string | null;
+    zip_code: string | null;
+    contact_name: string | null;
+    notes: string | null;
+    active: boolean;
+    created_at: string;
+    updated_at: string;
+}
+
+export interface Product {
+    id: number;
+    company_id: number | null;
+    parent_product_id: number | null;
+    code: string;
+    core_reference: string | null;
+    name: string;
+    description: string | null;
+    category: string | null;
+    color: string | null;
+    size: string | null;
+    unit: string;
+    price: string | null;
+    cost: string | null;
+    barcode: string | null;
+    sku: string | null;
+    min_stock: number;
+    max_stock: number;
+    active: boolean;
+    is_master: boolean;
+    created_at: string;
+    updated_at: string;
+    full_name?: string;
+    parent?: Product;
+    variations?: Product[];
+}
+
 export interface User {
     id: number;
     name: string;
@@ -51,6 +125,8 @@ export interface User {
     two_factor_enabled?: boolean;
     role_id?: number | null;
     role?: Role;
+    company_id?: number | null;
+    company?: Company;
     created_at: string;
     updated_at: string;
     [key: string]: unknown; // This allows for additional properties...

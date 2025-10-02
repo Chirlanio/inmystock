@@ -26,6 +26,7 @@ class User extends Authenticatable implements Auditable
         'email',
         'password',
         'role_id',
+        'company_id',
         'avatar',
     ];
 
@@ -58,6 +59,14 @@ class User extends Authenticatable implements Auditable
     public function role(): BelongsTo
     {
         return $this->belongsTo(Role::class);
+    }
+
+    /**
+     * Get the company that the user belongs to.
+     */
+    public function company(): BelongsTo
+    {
+        return $this->belongsTo(Company::class);
     }
 
     /**

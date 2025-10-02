@@ -23,30 +23,31 @@ class StockAuditController extends Controller
             ->paginate(15)
             ->withQueryString();
 
-        return Inertia::render('stock-audits/index', [
-            'audits' => $audits,
-            'filters' => $request->only(['search', 'status']),
-        ]);
-    }
-
-    public function create()
-    {
+        // Get users for the create modal
         $users = User::select('id', 'name', 'email')
             ->whereHas('role', function ($query) {
                 $query->whereIn('slug', ['admin', 'manager', 'auditor']);
             })
             ->get();
 
-        return Inertia::render('stock-audits/create', [
+        return Inertia::render('stock-audits/index', [
+            'audits' => $audits,
             'users' => $users,
+            'filters' => $request->only(['search', 'status']),
         ]);
+    }
+
+    public function create()
+    {
+        // Not used - creation handled via modal
+        return redirect()->route('stock-audits.index');
     }
 
     public function store(Request $request)
     {
         $validated = $request->validate([
             'title' => 'required|string|max:255',
-            'code' => 'required|string|max:255|unique:stock_audits,code',
+            'code' => 'nullable|string|max:255|unique:stock_audits,code',
             'description' => 'nullable|string',
             'responsible_id' => 'required|exists:users,id',
             'start_date' => 'required|date',
@@ -54,10 +55,9 @@ class StockAuditController extends Controller
             'required_counts' => 'required|integer|min:1|max:10',
         ]);
 
-        $audit = StockAudit::create($validated);
+        StockAudit::create($validated);
 
-        return redirect()->route('stock-audits.show', $audit)
-            ->with('success', 'Auditoria criada com sucesso!');
+        return back()->with('success', 'Auditoria criada com sucesso!');
     }
 
     public function show(StockAudit $stockAudit)
@@ -96,13 +96,11 @@ class StockAuditController extends Controller
     public function update(Request $request, StockAudit $stockAudit)
     {
         if (!$stockAudit->canBeEdited()) {
-            return redirect()->route('stock-audits.show', $stockAudit)
-                ->with('error', 'Esta auditoria não pode mais ser editada.');
+            return back()->with('error', 'Esta auditoria não pode mais ser editada.');
         }
 
         $validated = $request->validate([
             'title' => 'required|string|max:255',
-            'code' => 'required|string|max:255|unique:stock_audits,code,' . $stockAudit->id,
             'description' => 'nullable|string',
             'responsible_id' => 'required|exists:users,id',
             'start_date' => 'required|date',
@@ -113,20 +111,17 @@ class StockAuditController extends Controller
 
         $stockAudit->update($validated);
 
-        return redirect()->route('stock-audits.show', $stockAudit)
-            ->with('success', 'Auditoria atualizada com sucesso!');
+        return back()->with('success', 'Auditoria atualizada com sucesso!');
     }
 
     public function destroy(StockAudit $stockAudit)
     {
         if ($stockAudit->status !== 'planned') {
-            return redirect()->route('stock-audits.index')
-                ->with('error', 'Apenas auditorias planejadas podem ser excluídas.');
+            return back()->with('error', 'Apenas auditorias planejadas podem ser excluídas.');
         }
 
         $stockAudit->delete();
 
-        return redirect()->route('stock-audits.index')
-            ->with('success', 'Auditoria excluída com sucesso!');
+        return back()->with('success', 'Auditoria excluída com sucesso!');
     }
 }

@@ -307,7 +307,7 @@ export default function TwoFactorSetupModal({
 
     return (
         <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-            <DialogContent className="sm:max-w-md">
+            <DialogContent>
                 <DialogHeader className="flex items-center justify-center">
                     <GridScanIcon />
                     <DialogTitle>{modalConfig.title}</DialogTitle>
