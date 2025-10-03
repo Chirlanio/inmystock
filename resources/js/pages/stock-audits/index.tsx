@@ -33,7 +33,7 @@ import {
 } from '@/components/ui/select';
 import { useToastFlash } from '@/hooks/use-toast-flash';
 import { PaginatedData } from '@/types';
-import { ClipboardCheck, Eye, Edit, Plus, Search, Trash2 } from 'lucide-react';
+import { ClipboardCheck, Eye, Edit, Plus, Search, Trash2, ExternalLink } from 'lucide-react';
 
 interface User {
     id: number;
@@ -508,6 +508,17 @@ export default function StockAuditsIndexPage({ audits, users, filters }: Props) 
                             >
                                 Fechar
                             </Button>
+                            {selectedAudit && (
+                                <Button
+                                    variant="secondary"
+                                    onClick={() => {
+                                        router.visit(`/stock-audits/${selectedAudit.id}`);
+                                    }}
+                                    leftIcon={<ExternalLink />}
+                                >
+                                    Ver Detalhes Completos
+                                </Button>
+                            )}
                             {selectedAudit && selectedAudit.status !== 'completed' && selectedAudit.status !== 'cancelled' && (
                                 <Button
                                     onClick={() => {

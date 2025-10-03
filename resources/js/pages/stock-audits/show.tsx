@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import HeadingSmall from '@/components/heading-small';
-import { ArrowLeft, Edit, Plus } from 'lucide-react';
+import { ArrowLeft, Edit, Plus, Upload } from 'lucide-react';
 
 interface StockAudit {
   id: number;
@@ -120,19 +120,38 @@ export default function Show({ audit }: Props) {
             ) : (
               <div className="space-y-2">
                 {audit.stock_counts.map((count) => (
-                  <Link
+                  <div
                     key={count.id}
-                    href={`/stock-audits/${audit.id}/counts/${count.id}`}
-                    className="flex items-center justify-between p-4 border rounded-lg hover:bg-accent transition-colors"
+                    className="flex items-center justify-between gap-4 p-4 border rounded-lg"
                   >
-                    <div>
-                      <p className="font-medium">Contagem #{count.count_number}</p>
-                      <p className="text-sm text-muted-foreground">
-                        {count.area?.name || 'Sem área'} - {count.counter.name}
-                      </p>
+                    <Link
+                      href={`/stock-audits/${audit.id}/counts/${count.id}`}
+                      className="flex-1 hover:bg-accent transition-colors rounded p-2 -m-2"
+                    >
+                      <div>
+                        <p className="font-medium">Contagem #{count.count_number}</p>
+                        <p className="text-sm text-muted-foreground">
+                          {count.area?.name || 'Sem área'} - {count.counter.name}
+                        </p>
+                        {count.items_count !== undefined && (
+                          <p className="text-xs text-muted-foreground">
+                            {count.items_count} {count.items_count === 1 ? 'item' : 'itens'}
+                          </p>
+                        )}
+                      </div>
+                    </Link>
+                    <div className="flex items-center gap-2">
+                      <Badge>{count.status}</Badge>
+                      {count.status !== 'completed' && (
+                        <Link href={`/stock-counts/${count.id}/import`}>
+                          <Button variant="outline" size="sm">
+                            <Upload className="mr-2 h-4 w-4" />
+                            Importar
+                          </Button>
+                        </Link>
+                      )}
                     </div>
-                    <Badge>{count.status}</Badge>
-                  </Link>
+                  </div>
                 ))}
               </div>
             )}

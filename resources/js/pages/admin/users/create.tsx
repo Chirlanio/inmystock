@@ -13,7 +13,8 @@ import {
 import { useToastFlash } from '@/hooks/use-toast-flash';
 import AppLayout from '@/layouts/app-layout';
 import { Head, Link, useForm } from '@inertiajs/react';
-import { FormEvent } from 'react';
+import { FormEvent, useState } from 'react';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 interface Role {
     id: number;
@@ -36,11 +37,28 @@ export default function CreateUserPage({ roles }: Props) {
         password: '',
         password_confirmation: '',
         role_id: '',
+        avatar: null as File | null,
     });
+
+    const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
+
+    const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            setData('avatar', file);
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                setAvatarPreview(reader.result as string);
+            };
+            reader.readAsDataURL(file);
+        }
+    };
 
     const handleSubmit = (e: FormEvent) => {
         e.preventDefault();
-        post('/admin/users');
+        post('/admin/users', {
+            forceFormData: true,
+        });
     };
 
     return (
@@ -146,6 +164,42 @@ export default function CreateUserPage({ roles }: Props) {
                                         </p>
                                     )}
                                 </div>
+                            </div>
+
+                            <div className="space-y-2">
+                                <Label htmlFor="avatar">Foto do Usuário</Label>
+                                <div className="flex items-center gap-4">
+                                    {avatarPreview && (
+                                        <Avatar className="h-20 w-20">
+                                            <AvatarImage
+                                                src={avatarPreview}
+                                                alt="Preview"
+                                            />
+                                            <AvatarFallback>
+                                                {data.name
+                                                    .split(' ')
+                                                    .map((n) => n[0])
+                                                    .join('')
+                                                    .toUpperCase()
+                                                    .slice(0, 2) || 'US'}
+                                            </AvatarFallback>
+                                        </Avatar>
+                                    )}
+                                    <div className="flex-1">
+                                        <Input
+                                            id="avatar"
+                                            type="file"
+                                            accept="image/*"
+                                            onChange={handleAvatarChange}
+                                        />
+                                        <p className="mt-1 text-xs text-muted-foreground">
+                                            Formatos aceitos: JPG, PNG, GIF (máx. 2MB)
+                                        </p>
+                                    </div>
+                                </div>
+                                {errors.avatar && (
+                                    <p className="text-sm text-destructive">{errors.avatar}</p>
+                                )}
                             </div>
 
                             <div className="flex justify-end gap-4">

@@ -1,11 +1,15 @@
 {
     "$schema": "https://getcomposer.org/schema.json",
-    "name": "laravel/react-starter-kit",
+    "name": "inmystock/app",
     "type": "project",
-    "description": "The skeleton application for the Laravel framework.",
+    "description": "Sistema de gestão e auditoria de estoque.",
     "keywords": [
         "laravel",
-        "framework"
+        "react",
+        "inertia",
+        "stock",
+        "inventory",
+        "audit"
     ],
     "license": "MIT",
     "require": {

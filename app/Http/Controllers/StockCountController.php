@@ -25,17 +25,19 @@ class StockCountController extends Controller
 
     public function create(StockAudit $stockAudit)
     {
+        $stockAudit->loadCount('stockCounts');
+
         $areas = Area::where('active', true)->get();
-        $counters = User::select('id', 'name', 'email')
+        $users = User::select('id', 'name', 'email')
             ->whereHas('role', function ($query) {
                 $query->whereIn('slug', ['admin', 'manager', 'auditor', 'operator']);
             })
             ->get();
 
         return Inertia::render('stock-counts/create', [
-            'audit' => $stockAudit,
+            'stockAudit' => $stockAudit,
             'areas' => $areas,
-            'counters' => $counters,
+            'users' => $users,
         ]);
     }
 
@@ -62,17 +64,18 @@ class StockCountController extends Controller
 
         $count = $stockAudit->stockCounts()->create($validated);
 
-        return redirect()->route('stock-counts.show', [$stockAudit, $count])
-            ->with('success', 'Contagem criada com sucesso!');
+        return redirect()->route('stock-counts.show', [
+            'stockAudit' => $stockAudit->id,
+            'stockCount' => $count->id
+        ])->with('success', 'Contagem criada com sucesso!');
     }
 
     public function show(StockAudit $stockAudit, StockCount $stockCount)
     {
-        $stockCount->load(['area', 'counter', 'items']);
+        $stockCount->load(['stockAudit', 'area', 'counter', 'items']);
 
         return Inertia::render('stock-counts/show', [
-            'audit' => $stockAudit,
-            'count' => $stockCount,
+            'stockCount' => $stockCount,
         ]);
     }
 
@@ -84,19 +87,18 @@ class StockCountController extends Controller
         }
 
         $areas = Area::where('active', true)->get();
-        $counters = User::select('id', 'name', 'email')
+        $users = User::select('id', 'name', 'email')
             ->whereHas('role', function ($query) {
                 $query->whereIn('slug', ['admin', 'manager', 'auditor', 'operator']);
             })
             ->get();
 
-        $stockCount->load(['area', 'counter', 'items']);
+        $stockCount->load(['stockAudit', 'area', 'counter', 'items']);
 
         return Inertia::render('stock-counts/edit', [
-            'audit' => $stockAudit,
-            'count' => $stockCount,
+            'stockCount' => $stockCount,
             'areas' => $areas,
-            'counters' => $counters,
+            'users' => $users,
         ]);
     }
 

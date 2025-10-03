@@ -25,22 +25,12 @@ import {
     Settings,
     Shield,
     ClipboardCheck,
-    MapPin
+    MapPin,
+    FileWarning
 } from 'lucide-react';
 import AppLogo from './app-logo';
 
-const footerNavItems: NavItem[] = [
-    {
-        title: 'Repository',
-        href: 'https://github.com/laravel/react-starter-kit',
-        icon: Folder,
-    },
-    {
-        title: 'Documentation',
-        href: 'https://laravel.com/docs/starter-kits#react',
-        icon: BookOpen,
-    },
-];
+const footerNavItems: NavItem[] = [];
 
 export function AppSidebar() {
     const { auth } = usePage<{ auth: { user: User | null } }>().props;
@@ -133,6 +123,11 @@ export function AppSidebar() {
                     title: 'Empresas',
                     href: '/admin/companies',
                     icon: Building2,
+                },
+                {
+                    title: 'Logs do Sistema',
+                    href: '/admin/logs',
+                    icon: FileWarning,
                 },
             ],
         });

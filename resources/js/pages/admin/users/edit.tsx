@@ -30,6 +30,7 @@ interface User {
     email: string;
     role_id: number | null;
     role?: Role;
+    avatar?: string | null;
 }
 
 interface Props {
@@ -40,13 +41,14 @@ interface Props {
 export default function EditUserPage({ user, roles }: Props) {
     useToastFlash();
 
-    const { data, setData, put, processing, errors } = useForm({
+    const { data, setData, post, processing, errors } = useForm({
         name: user.name,
         email: user.email,
         role_id: user.role_id?.toString() || '',
         password: '',
         password_confirmation: '',
         avatar: null as File | null,
+        _method: 'PUT' as const,
     });
 
     const [avatarPreview, setAvatarPreview] = useState<string | null>(
@@ -55,7 +57,9 @@ export default function EditUserPage({ user, roles }: Props) {
 
     const handleSubmit = (e: FormEvent) => {
         e.preventDefault();
-        put(`/admin/users/${user.id}`);
+        post(`/admin/users/${user.id}`, {
+            forceFormData: true,
+        });
     };
 
     const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
