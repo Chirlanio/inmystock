@@ -371,11 +371,15 @@ export default function ProductsIndexPage({ products, categories, filters }: Pro
                                         disabled={!link.url}
                                         onClick={() => {
                                             if (link.url) {
-                                                router.visit(link.url);
+                                                router.visit(link.url, {
+                                                    preserveState: true,
+                                                    preserveScroll: true,
+                                                });
                                             }
                                         }}
-                                        dangerouslySetInnerHTML={{ __html: link.label }}
-                                    />
+                                    >
+                                        <span dangerouslySetInnerHTML={{ __html: link.label }} />
+                                    </Button>
                                 ))}
                             </div>
                         )}

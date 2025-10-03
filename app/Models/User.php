@@ -54,6 +54,16 @@ class User extends Authenticatable implements Auditable
     }
 
     /**
+     * Get the avatar URL attribute.
+     */
+    protected function avatar(): \Illuminate\Database\Eloquent\Casts\Attribute
+    {
+        return \Illuminate\Database\Eloquent\Casts\Attribute::make(
+            get: fn ($value) => $value ? asset('storage/' . $value) : null,
+        );
+    }
+
+    /**
      * Get the role that the user belongs to.
      */
     public function role(): BelongsTo

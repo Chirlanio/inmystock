@@ -148,7 +148,10 @@ class ProductController extends Controller
         $file = $request->file('file');
         $path = $file->getRealPath();
 
-        $csv = array_map('str_getcsv', file($path));
+        // Parse CSV with semicolon delimiter
+        $csv = array_map(function($line) {
+            return str_getcsv($line, ';');
+        }, file($path));
         $header = array_shift($csv); // Remove header row
 
         // Normalize header to lowercase and trim

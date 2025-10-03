@@ -14,9 +14,7 @@ import { dashboard } from '@/routes';
 import { type NavItem, type User } from '@/types';
 import { Link, usePage } from '@inertiajs/react';
 import {
-    BookOpen,
     Building2,
-    Folder,
     LayoutGrid,
     Package,
     FileText,
