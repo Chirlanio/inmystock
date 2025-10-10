@@ -24,7 +24,10 @@ import {
     Shield,
     ClipboardCheck,
     MapPin,
-    FileWarning
+    FileWarning,
+    AlertTriangle,
+    GitCompare,
+    PackageX,
 } from 'lucide-react';
 import AppLogo from './app-logo';
 
@@ -76,6 +79,28 @@ export function AppSidebar() {
             title: 'Relatórios',
             href: '/reports',
             icon: FileText,
+            items: [
+                {
+                    title: 'Visão Geral',
+                    href: '/reports',
+                    icon: FileText,
+                },
+                {
+                    title: 'Estoque vs Contagem',
+                    href: '/reports/stock-vs-count',
+                    icon: AlertTriangle,
+                },
+                {
+                    title: 'Entre Contagens',
+                    href: '/reports/count-vs-count',
+                    icon: GitCompare,
+                },
+                {
+                    title: 'Produtos Não Contados',
+                    href: '/reports/missing-products',
+                    icon: PackageX,
+                },
+            ],
         });
     }
 
