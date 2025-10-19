@@ -6,6 +6,7 @@ use App\Models\Area;
 use App\Models\Product;
 use App\Models\StockAudit;
 use App\Models\Supplier;
+use App\Models\InventoryLevel;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
@@ -71,13 +72,28 @@ class DashboardController extends Controller
             ->get();
 
         // Produtos com estoque baixo (min_stock)
-        $lowStockProducts = Product::when($companyId && !$user->isAdmin(), function ($query) use ($companyId) {
+        // Buscar produtos ativos com min_stock definido
+        $productsWithMinStock = Product::when($companyId && !$user->isAdmin(), function ($query) use ($companyId) {
             $query->where('company_id', $companyId);
         })
             ->where('active', true)
-            ->whereColumn('min_stock', '>', DB::raw('0'))
-            ->take(5)
+            ->where('min_stock', '>', 0)
             ->get();
+
+        // Filtrar produtos que estão com estoque baixo baseado no InventoryLevel
+        $lowStockProducts = $productsWithMinStock->filter(function ($product) use ($companyId) {
+            $totalStock = InventoryLevel::getTotalQuantityForProduct($product->id, $companyId ?? auth()->user()->company_id);
+            return $totalStock < $product->min_stock;
+        })
+            ->map(function ($product) use ($companyId) {
+                $totalStock = InventoryLevel::getTotalQuantityForProduct($product->id, $companyId ?? auth()->user()->company_id);
+                $product->current_stock = $totalStock;
+                $product->stock_difference = $totalStock - $product->min_stock;
+                return $product;
+            })
+            ->sortBy('stock_difference')
+            ->take(5)
+            ->values();
 
         // Estatísticas por categoria
         $productsByCategory = Product::when($companyId && !$user->isAdmin(), function ($query) use ($companyId) {

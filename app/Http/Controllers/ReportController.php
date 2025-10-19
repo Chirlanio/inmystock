@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\StockCount;
 use App\Models\StockCountItem;
 use App\Models\Product;
+use App\Models\InventoryLevel;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
@@ -49,9 +50,24 @@ class ReportController extends Controller
             ->map(function ($item) {
                 $product = Product::where('code', $item->product_code)->first();
 
-                // Estoque teórico seria baseado em movimentações (por enquanto usamos 0 como base)
-                // TODO: Implementar cálculo real de estoque teórico baseado em movimentações
-                $theoreticalStock = $product ? 0 : 0;
+                // Buscar estoque teórico real baseado em movimentações
+                $theoreticalStock = 0;
+                if ($product) {
+                    // Se houver área especificada na contagem, buscar estoque dessa área
+                    if ($item->stockCount && $item->stockCount->area_id) {
+                        $inventoryLevel = InventoryLevel::where('product_id', $product->id)
+                            ->where('area_id', $item->stockCount->area_id)
+                            ->first();
+                        $theoreticalStock = $inventoryLevel ? (float) $inventoryLevel->quantity : 0;
+                    } else {
+                        // Caso contrário, buscar estoque total do produto
+                        $theoreticalStock = InventoryLevel::getTotalQuantityForProduct(
+                            $product->id,
+                            auth()->user()->company_id
+                        );
+                    }
+                }
+
                 $countedStock = $item->quantity_counted;
                 $difference = $countedStock - $theoreticalStock;
                 $percentageDiff = $theoreticalStock > 0
@@ -293,7 +309,25 @@ class ReportController extends Controller
 
         foreach ($items as $item) {
             $product = Product::where('code', $item->product_code)->first();
+
+            // Buscar estoque teórico real
             $theoreticalStock = 0;
+            if ($product) {
+                // Se houver área especificada na contagem, buscar estoque dessa área
+                if ($item->stockCount && $item->stockCount->area_id) {
+                    $inventoryLevel = InventoryLevel::where('product_id', $product->id)
+                        ->where('area_id', $item->stockCount->area_id)
+                        ->first();
+                    $theoreticalStock = $inventoryLevel ? (float) $inventoryLevel->quantity : 0;
+                } else {
+                    // Caso contrário, buscar estoque total do produto
+                    $theoreticalStock = InventoryLevel::getTotalQuantityForProduct(
+                        $product->id,
+                        auth()->user()->company_id
+                    );
+                }
+            }
+
             $difference = $item->quantity_counted - $theoreticalStock;
 
             fputcsv($file, [
