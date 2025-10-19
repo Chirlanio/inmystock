@@ -5,6 +5,7 @@ namespace App\Models;
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Fortify\TwoFactorAuthenticatable;
@@ -14,7 +15,7 @@ use OwenIt\Auditing\Auditable as AuditableTrait;
 class User extends Authenticatable implements Auditable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable, TwoFactorAuthenticatable, AuditableTrait;
+    use HasFactory, Notifiable, TwoFactorAuthenticatable, AuditableTrait, SoftDeletes;
 
     /**
      * The attributes that are mass assignable.
@@ -28,6 +29,7 @@ class User extends Authenticatable implements Auditable
         'role_id',
         'company_id',
         'avatar',
+        'status',
     ];
 
     /**

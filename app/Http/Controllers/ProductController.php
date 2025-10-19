@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Product;
+use App\Models\Category;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -10,7 +11,7 @@ class ProductController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Product::query();
+        $query = Product::with('category');
 
         // Search filter
         if ($request->has('search')) {
@@ -20,7 +21,9 @@ class ProductController extends Controller
                     ->orWhere('code', 'like', "%{$search}%")
                     ->orWhere('barcode', 'like', "%{$search}%")
                     ->orWhere('sku', 'like', "%{$search}%")
-                    ->orWhere('category', 'like', "%{$search}%");
+                    ->orWhereHas('category', function ($query) use ($search) {
+                        $query->where('name', 'like', "%{$search}%");
+                    });
             });
         }
 
@@ -31,7 +34,7 @@ class ProductController extends Controller
 
         // Category filter
         if ($request->has('category') && $request->category !== 'all') {
-            $query->where('category', $request->category);
+            $query->where('category_id', $request->category);
         }
 
         // Sorting
@@ -41,14 +44,8 @@ class ProductController extends Controller
 
         $products = $query->paginate(10)->withQueryString();
 
-        // Get unique categories for filter
-        $categories = Product::query()
-            ->whereNotNull('category')
-            ->distinct()
-            ->pluck('category')
-            ->filter()
-            ->sort()
-            ->values();
+        // Get all categories for filter
+        $categories = Category::query()->orderBy('name')->get();
 
         return Inertia::render('products/index', [
             'products' => $products,
@@ -67,11 +64,10 @@ class ProductController extends Controller
     {
         $validated = $request->validate([
             'parent_product_id' => 'nullable|exists:products,id',
-            'code' => 'nullable|string|max:255|unique:products,code',
             'core_reference' => 'nullable|string|max:255',
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
-            'category' => 'nullable|string|max:255',
+            'category_id' => 'nullable|exists:categories,id',
             'color' => 'nullable|string|max:255',
             'size' => 'nullable|string|max:255',
             'unit' => 'required|string|max:10',
@@ -109,11 +105,10 @@ class ProductController extends Controller
     {
         $validated = $request->validate([
             'parent_product_id' => 'nullable|exists:products,id',
-            'code' => 'nullable|string|max:255|unique:products,code,' . $product->id,
             'core_reference' => 'nullable|string|max:255',
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
-            'category' => 'nullable|string|max:255',
+            'category_id' => 'nullable|exists:categories,id',
             'color' => 'nullable|string|max:255',
             'size' => 'nullable|string|max:255',
             'unit' => 'required|string|max:10',
@@ -186,7 +181,6 @@ class ProductController extends Controller
                 $productData = [
                     'name' => trim($data['name']),
                     'description' => !empty($data['description']) ? trim($data['description']) : null,
-                    'category' => !empty($data['category']) ? trim($data['category']) : null,
                     'color' => !empty($data['color']) ? trim($data['color']) : null,
                     'size' => !empty($data['size']) ? trim($data['size']) : null,
                     'unit' => !empty($data['unit']) ? strtoupper(trim($data['unit'])) : 'UN',
@@ -198,6 +192,17 @@ class ProductController extends Controller
                     'max_stock' => !empty($data['max_stock']) ? (int) $data['max_stock'] : 0,
                     'active' => empty($data['active']) || strtolower($data['active']) === 'sim' || $data['active'] === '1',
                 ];
+
+                // Handle category
+                if (!empty($data['category'])) {
+                    $category = Category::firstOrCreate(
+                        [
+                            'name' => trim($data['category']),
+                            'company_id' => auth()->user()->company_id,
+                        ]
+                    );
+                    $productData['category_id'] = $category->id;
+                }
 
                 // Handle code - if provided, use it; otherwise it will be auto-generated
                 if (!empty($data['code'])) {

@@ -20,7 +20,7 @@ class Product extends Model implements Auditable
         'core_reference',
         'name',
         'description',
-        'category',
+        'category_id',
         'color',
         'size',
         'unit',
@@ -73,6 +73,14 @@ class Product extends Model implements Auditable
     public function variations(): HasMany
     {
         return $this->hasMany(Product::class, 'parent_product_id');
+    }
+
+    /**
+     * Category relationship
+     */
+    public function category(): BelongsTo
+    {
+        return $this->belongsTo(Category::class);
     }
 
     /**

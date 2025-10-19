@@ -1,3 +1,4 @@
+import { LucideIcon } from '@/components/lucide-icon';
 import { ProductViewModal } from '@/components/product-view-modal';
 import { Column, DataTable } from '@/components/data-table';
 import HeadingSmall from '@/components/heading-small';
@@ -32,7 +33,7 @@ import { FormEvent, useEffect, useRef, useState } from 'react';
 
 interface Props {
     products: PaginatedData<Product>;
-    categories: string[];
+    categories: Category[];
     filters: {
         search?: string;
         active?: string;
@@ -79,10 +80,24 @@ export default function ProductsIndexPage({ products, categories, filters }: Pro
     }, [search, activeFilter, categoryFilter]);
 
     const { data, setData, post, processing, errors, reset } = useForm({
+        name: '',
+        description: '',
+        category_id: '',
+        unit: 'UN',
+        price: '',
+        cost: '',
+        barcode: '',
+        sku: '',
+        min_stock: 0,
+        max_stock: 0,
+        active: true,
+    });
+
+    const editForm = useForm({
         code: '',
         name: '',
         description: '',
-        category: '',
+        category_id: '',
         unit: 'UN',
         price: '',
         cost: '',
@@ -100,19 +115,11 @@ export default function ProductsIndexPage({ products, categories, filters }: Pro
         processing: editProcessing,
         errors: editErrors,
         reset: resetEdit,
-    } = useForm({
-        code: '',
-        name: '',
-        description: '',
-        category: '',
-        unit: 'UN',
-        price: '',
-        cost: '',
-        barcode: '',
-        sku: '',
-        min_stock: 0,
-        max_stock: 0,
-        active: true,
+    } = editForm;
+
+    editForm.transform((data) => {
+        const { code, ...rest } = data;
+        return rest;
     });
 
     const handleSort = (column: string) => {
@@ -159,7 +166,7 @@ export default function ProductsIndexPage({ products, categories, filters }: Pro
             code: product.code,
             name: product.name,
             description: product.description || '',
-            category: product.category || '',
+            category_id: product.category ? String(product.category.id) : '',
             unit: product.unit,
             price: product.price ? String(product.price) : '',
             cost: product.cost ? String(product.cost) : '',
@@ -234,7 +241,12 @@ export default function ProductsIndexPage({ products, categories, filters }: Pro
                     <div>
                         <p className="font-medium">{product.name}</p>
                         {product.category && (
-                            <p className="text-sm text-muted-foreground">{product.category}</p>
+                            <p className="flex items-center gap-1 text-sm text-muted-foreground">
+                                {product.category.icon && (
+                                    <LucideIcon name={product.category.icon as any} className="h-4 w-4" />
+                                )}
+                                {product.category.name}
+                            </p>
                         )}
                     </div>
                 </div>
@@ -331,8 +343,13 @@ export default function ProductsIndexPage({ products, categories, filters }: Pro
                                 <SelectContent>
                                     <SelectItem value="all">Todas categorias</SelectItem>
                                     {categories.map((category) => (
-                                        <SelectItem key={category} value={category}>
-                                            {category}
+                                        <SelectItem key={category.id} value={String(category.id)}>
+                                            <div className="flex items-center gap-2">
+                                                {category.icon && (
+                                                    <LucideIcon name={category.icon as any} className="h-5 w-5" />
+                                                )}
+                                                <span>{category.name}</span>
+                                            </div>
                                         </SelectItem>
                                     ))}
                                 </SelectContent>
@@ -412,31 +429,24 @@ export default function ProductsIndexPage({ products, categories, filters }: Pro
                                 </div>
 
                                 <div className="space-y-2">
-                                    <Label htmlFor="code">Código</Label>
-                                    <Input
-                                        id="code"
-                                        value={data.code}
-                                        onChange={(e) => setData('code', e.target.value)}
-                                        placeholder="Gerado automaticamente se vazio"
-                                    />
-                                    {errors.code && (
-                                        <p className="text-sm text-destructive">{errors.code}</p>
-                                    )}
-                                    <p className="text-xs text-muted-foreground">
-                                        Deixe vazio para gerar automaticamente
-                                    </p>
-                                </div>
-
-                                <div className="space-y-2">
-                                    <Label htmlFor="category">Categoria</Label>
-                                    <Input
-                                        id="category"
-                                        value={data.category}
-                                        onChange={(e) => setData('category', e.target.value)}
-                                        placeholder="Ex: Eletrônicos, Alimentos"
-                                    />
-                                    {errors.category && (
-                                        <p className="text-sm text-destructive">{errors.category}</p>
+                                    <Label htmlFor="category_id">Categoria</Label>
+                                            {categories.map((category) => (
+                                                <SelectItem
+                                                    key={category.id}
+                                                    value={String(category.id)}
+                                                >
+                                                    <div className="flex items-center gap-2">
+                                                        {category.icon && (
+                                                            <LucideIcon name={category.icon as any} className="h-5 w-5" />
+                                                        )}
+                                                        <span>{category.name}</span>
+                                                    </div>
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                    {errors.category_id && (
+                                        <p className="text-sm text-destructive">{errors.category_id}</p>
                                     )}
                                 </div>
 
@@ -622,26 +632,41 @@ export default function ProductsIndexPage({ products, categories, filters }: Pro
                                     <Input
                                         id="edit-code"
                                         value={editData.code}
-                                        onChange={(e) => setEditData('code', e.target.value)}
-                                        placeholder="Código do produto"
+                                        readOnly
+                                        className="cursor-not-allowed bg-muted"
                                     />
-                                    {editErrors.code && (
-                                        <p className="text-sm text-destructive">{editErrors.code}</p>
-                                    )}
+                                    <p className="text-xs text-muted-foreground">
+                                        O código do produto não pode ser alterado.
+                                    </p>
                                 </div>
 
                                 <div className="space-y-2">
-                                    <Label htmlFor="edit-category">Categoria</Label>
-                                    <Input
-                                        id="edit-category"
-                                        value={editData.category}
-                                        onChange={(e) => setEditData('category', e.target.value)}
-                                        placeholder="Ex: Eletrônicos, Alimentos"
-                                    />
-                                    {editErrors.category && (
-                                        <p className="text-sm text-destructive">
-                                            {editErrors.category}
-                                        </p>
+                                    <Label htmlFor="edit-category_id">Categoria</Label>
+                                    <Select
+                                        value={editData.category_id}
+                                        onValueChange={(value) => setEditData('category_id', value)}
+                                    >
+                                        <SelectTrigger>
+                                            <SelectValue placeholder="Selecione uma categoria" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {categories.map((category) => (
+                                                <SelectItem
+                                                    key={category.id}
+                                                    value={String(category.id)}
+                                                >
+                                                    <div className="flex items-center gap-2">
+                                                        {category.icon && (
+                                                            <LucideIcon name={category.icon as any} className="h-5 w-5" />
+                                                        )}
+                                                        <span>{category.name}</span>
+                                                    </div>
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                    {editErrors.category_id && (
+                                        <p className="text-sm text-destructive">{editErrors.category_id}</p>
                                     )}
                                 </div>
 

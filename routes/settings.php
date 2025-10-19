@@ -26,7 +26,4 @@ Route::middleware('auth')->group(function () {
 
     Route::get('settings/two-factor', [TwoFactorAuthenticationController::class, 'show'])
         ->name('two-factor.show');
-
-    Route::get('settings/audit', [AuditController::class, 'index'])->name('audit.index');
-    Route::get('settings/audit/{audit}', [AuditController::class, 'show'])->name('audit.show');
 });

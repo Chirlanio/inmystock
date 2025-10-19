@@ -20,3 +20,4 @@ require __DIR__.'/suppliers.php';
 require __DIR__.'/inventory.php';
 require __DIR__.'/reports.php';
 require __DIR__.'/stock-audits.php';
+require __DIR__.'/admin.php';

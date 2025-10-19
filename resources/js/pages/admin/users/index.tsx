@@ -1,6 +1,5 @@
 import { Column, DataTable } from '@/components/data-table';
 import HeadingSmall from '@/components/heading-small';
-import { UserViewModal } from '@/components/user-view-modal';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -24,47 +23,43 @@ import {
 } from '@/components/ui/select';
 import { useToastFlash } from '@/hooks/use-toast-flash';
 import AppLayout from '@/layouts/app-layout';
-import { PaginatedData } from '@/types';
+import { destroy, index, store, update } from '@/routes/admin/users';
+import { Company, PaginatedData, Role, User } from '@/types';
 import { Head, router, useForm } from '@inertiajs/react';
 import { PlusCircle, Search } from 'lucide-react';
 import { FormEvent, useEffect, useState } from 'react';
 
-// Use Role and User from '@/types' to ensure type compatibility
-import type { Role, User } from '@/types';
-
 interface Props {
     users: PaginatedData<User>;
     roles: Role[];
+    companies: Company[];
     filters: {
         search?: string;
-        role?: number;
-        sort?: string;
-        direction?: 'asc' | 'desc';
+        role?: string;
     };
 }
 
-export default function UsersIndexPage({ users, roles, filters }: Props) {
+export default function UsersIndexPage({ users, roles, companies, filters }: Props) {
     useToastFlash();
 
     const [search, setSearch] = useState(filters.search || '');
-    const [roleFilter, setRoleFilter] = useState(filters.role?.toString() || 'all');
+    const [roleFilter, setRoleFilter] = useState(filters.role || 'all');
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-    const [isViewModalOpen, setIsViewModalOpen] = useState(false);
     const [editingUser, setEditingUser] = useState<User | null>(null);
-    const [viewingUser, setViewingUser] = useState<User | null>(null);
+    const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
+    const [editAvatarPreview, setEditAvatarPreview] = useState<string | null>(null);
 
-    // Auto-submit filters with debounce
     useEffect(() => {
         const timer = setTimeout(() => {
             router.get(
-                '/admin/users',
-                {
-                    search: search || undefined,
-                    role: roleFilter === 'all' ? undefined : roleFilter,
-                    sort: filters.sort,
-                    direction: filters.direction,
-                },
+                index.url({
+                    query: {
+                        search: search || undefined,
+                        role: roleFilter === 'all' ? undefined : roleFilter,
+                    },
+                }),
+                {},
                 { preserveState: true, preserveScroll: true }
             );
         }, 500);
@@ -78,6 +73,7 @@ export default function UsersIndexPage({ users, roles, filters }: Props) {
         password: '',
         password_confirmation: '',
         role_id: '',
+        company_id: '',
         avatar: null as File | null,
     });
 
@@ -91,48 +87,18 @@ export default function UsersIndexPage({ users, roles, filters }: Props) {
     } = useForm({
         name: '',
         email: '',
-        role_id: '',
         password: '',
         password_confirmation: '',
+        role_id: '',
+        company_id: '',
         avatar: null as File | null,
-        _method: 'PUT' as const,
+        _method: 'PUT',
     });
-
-    const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
-    const [editAvatarPreview, setEditAvatarPreview] = useState<string | null>(null);
-
-    const handleSort = (column: string) => {
-        const newDirection =
-            filters.sort === column && filters.direction === 'asc' ? 'desc' : 'asc';
-
-        router.get(
-            '/admin/users',
-            {
-                search: search || undefined,
-                role: roleFilter === 'all' ? undefined : roleFilter,
-                sort: column,
-                direction: newDirection,
-            },
-            { preserveState: true, preserveScroll: true }
-        );
-    };
 
     const handleDelete = (userId: number) => {
         if (confirm('Tem certeza que deseja excluir este usuário?')) {
-            router.delete(`/admin/users/${userId}`);
+            router.delete(destroy.url(userId));
         }
-    };
-
-    const handleCreateUser = (e: FormEvent) => {
-        e.preventDefault();
-        post('/admin/users', {
-            forceFormData: true,
-            onSuccess: () => {
-                setIsCreateModalOpen(false);
-                reset();
-                setAvatarPreview(null);
-            },
-        });
     };
 
     const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -159,9 +125,16 @@ export default function UsersIndexPage({ users, roles, filters }: Props) {
         }
     };
 
-    const handleViewUser = (user: User) => {
-        setViewingUser(user);
-        setIsViewModalOpen(true);
+    const handleCreateUser = (e: FormEvent) => {
+        e.preventDefault();
+        post(store.url(), {
+            forceFormData: true,
+            onSuccess: () => {
+                setIsCreateModalOpen(false);
+                reset();
+                setAvatarPreview(null);
+            },
+        });
     };
 
     const handleEditUser = (user: User) => {
@@ -169,13 +142,14 @@ export default function UsersIndexPage({ users, roles, filters }: Props) {
         setEditData({
             name: user.name,
             email: user.email,
-            role_id: user.role_id?.toString() || '',
             password: '',
             password_confirmation: '',
+            role_id: String(user.role.id),
+            company_id: String(user.company.id),
             avatar: null,
             _method: 'PUT',
         });
-        setEditAvatarPreview(user.avatar ? `/storage/${user.avatar}` : null);
+        setEditAvatarPreview(user.avatar || null);
         setIsEditModalOpen(true);
     };
 
@@ -183,7 +157,7 @@ export default function UsersIndexPage({ users, roles, filters }: Props) {
         e.preventDefault();
         if (!editingUser) return;
 
-        editPost(`/admin/users/${editingUser.id}`, {
+        editPost(update.url(editingUser.id), {
             forceFormData: true,
             onSuccess: () => {
                 setIsEditModalOpen(false);
@@ -194,73 +168,38 @@ export default function UsersIndexPage({ users, roles, filters }: Props) {
         });
     };
 
-    const getRoleBadgeVariant = (level: number) => {
-        if (level >= 100) return 'destructive';
-        if (level >= 75) return 'default';
-        if (level >= 50) return 'secondary';
-        return 'outline';
-    };
-
     const columns: Column<User>[] = [
         {
             key: 'name',
-            label: 'Usuário',
-            sortable: true,
+            label: 'Nome',
             render: (user) => (
                 <div className="flex items-center gap-3">
-                    <Avatar>
-                        <AvatarImage
-                            src={user.avatar ? `/storage/${user.avatar}` : undefined}
-                            alt={user.name}
-                        />
-                        <AvatarFallback>
-                            {user.name
-                                .split(' ')
-                                .map((n) => n[0])
-                                .join('')
-                                .toUpperCase()
-                                .slice(0, 2)}
-                        </AvatarFallback>
+                    <Avatar className="h-9 w-9">
+                        <AvatarImage src={user.avatar} alt={user.name} />
+                        <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
                     </Avatar>
-                    <span className="font-medium">{user.name}</span>
+                    <div>
+                        <p className="font-medium">{user.name}</p>
+                        <p className="text-sm text-muted-foreground">{user.email}</p>
+                    </div>
                 </div>
             ),
         },
         {
-            key: 'email',
-            label: 'Email',
-            sortable: true,
-        },
-        {
             key: 'role',
             label: 'Função',
-            render: (user) =>
-                user.role ? (
-                    <Badge variant={getRoleBadgeVariant(user.role.level)}>
-                        {user.role.name}
-                    </Badge>
-                ) : (
-                    <span className="text-muted-foreground">Sem função</span>
-                ),
+            render: (user) => <Badge variant="outline">{user.role.name}</Badge>,
         },
         {
-            key: 'email_verified_at',
-            label: 'Status',
-            render: (user) =>
-                user.email_verified_at ? (
-                    <Badge variant="secondary">Verificado</Badge>
-                ) : (
-                    <Badge variant="outline">Não verificado</Badge>
-                ),
+            key: 'company',
+            label: 'Empresa',
+            render: (user) => <Badge variant="secondary">{user.company.name}</Badge>,
         },
         {
             key: 'actions',
             label: 'Ações',
             render: (user) => (
                 <div className="flex justify-end gap-2">
-                    <Button variant="ghost" size="sm" onClick={() => handleViewUser(user)}>
-                        Visualizar
-                    </Button>
                     <Button variant="outline" size="sm" onClick={() => handleEditUser(user)}>
                         Editar
                     </Button>
@@ -284,7 +223,7 @@ export default function UsersIndexPage({ users, roles, filters }: Props) {
                 <div className="flex items-center justify-between">
                     <HeadingSmall
                         title="Gerenciar Usuários"
-                        description="Gerencie usuários e suas permissões"
+                        description="Adicione, edite e remova os usuários do sistema"
                     />
                     <Button onClick={() => setIsCreateModalOpen(true)}>
                         <PlusCircle className="mr-2 h-4 w-4" />
@@ -298,20 +237,20 @@ export default function UsersIndexPage({ users, roles, filters }: Props) {
                             <div className="relative flex-1">
                                 <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                                 <Input
-                                    placeholder="Buscar por nome ou email..."
+                                    placeholder="Buscar por nome ou e-mail..."
                                     value={search}
                                     onChange={(e) => setSearch(e.target.value)}
                                     className="pl-10"
                                 />
                             </div>
                             <Select value={roleFilter} onValueChange={setRoleFilter}>
-                                <SelectTrigger className="w-[200px]">
+                                <SelectTrigger className="w-[180px]">
                                     <SelectValue placeholder="Filtrar por função" />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    <SelectItem value="all">Todas as funções</SelectItem>
+                                    <SelectItem value="all">Todas funções</SelectItem>
                                     {roles.map((role) => (
-                                        <SelectItem key={role.id} value={role.id.toString()}>
+                                        <SelectItem key={role.id} value={role.slug}>
                                             {role.name}
                                         </SelectItem>
                                     ))}
@@ -322,12 +261,6 @@ export default function UsersIndexPage({ users, roles, filters }: Props) {
                         <DataTable
                             columns={columns}
                             data={users.data}
-                            currentSort={
-                                filters.sort
-                                    ? { column: filters.sort, direction: filters.direction || 'asc' }
-                                    : null
-                            }
-                            onSort={handleSort}
                             emptyMessage="Nenhum usuário encontrado."
                         />
 
@@ -341,17 +274,22 @@ export default function UsersIndexPage({ users, roles, filters }: Props) {
                                         disabled={!link.url}
                                         onClick={() => {
                                             if (link.url) {
-                                                router.visit(link.url);
+                                                router.visit(link.url, {
+                                                    preserveState: true,
+                                                    preserveScroll: true,
+                                                });
                                             }
                                         }}
-                                        dangerouslySetInnerHTML={{ __html: link.label }}
-                                    />
+                                    >
+                                        <span dangerouslySetInnerHTML={{ __html: link.label }} />
+                                    </Button>
                                 ))}
                             </div>
                         )}
                     </CardContent>
                 </Card>
 
+                {/* Create Modal */}
                 <Dialog open={isCreateModalOpen} onOpenChange={setIsCreateModalOpen}>
                     <DialogContent>
                         <DialogHeader>
@@ -362,9 +300,9 @@ export default function UsersIndexPage({ users, roles, filters }: Props) {
                         </DialogHeader>
 
                         <form onSubmit={handleCreateUser} className="space-y-6">
-                            <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+                            <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                                 <div className="space-y-2">
-                                    <Label htmlFor="name">Nome</Label>
+                                    <Label htmlFor="name">Nome *</Label>
                                     <Input
                                         id="name"
                                         value={data.name}
@@ -377,7 +315,7 @@ export default function UsersIndexPage({ users, roles, filters }: Props) {
                                 </div>
 
                                 <div className="space-y-2">
-                                    <Label htmlFor="email">Email</Label>
+                                    <Label htmlFor="email">E-mail *</Label>
                                     <Input
                                         id="email"
                                         type="email"
@@ -391,36 +329,7 @@ export default function UsersIndexPage({ users, roles, filters }: Props) {
                                 </div>
 
                                 <div className="space-y-2">
-                                    <Label htmlFor="role">Função</Label>
-                                    <Select
-                                        value={data.role_id}
-                                        onValueChange={(value) => setData('role_id', value)}
-                                    >
-                                        <SelectTrigger>
-                                            <SelectValue placeholder="Selecione uma função" />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            {roles.map((role) => (
-                                                <SelectItem key={role.id} value={role.id.toString()}>
-                                                    <div className="flex flex-col">
-                                                        <span className="font-medium">{role.name}</span>
-                                                        {role.description && (
-                                                            <span className="text-xs text-muted-foreground">
-                                                                {role.description}
-                                                            </span>
-                                                        )}
-                                                    </div>
-                                                </SelectItem>
-                                            ))}
-                                        </SelectContent>
-                                    </Select>
-                                    {errors.role_id && (
-                                        <p className="text-sm text-destructive">{errors.role_id}</p>
-                                    )}
-                                </div>
-
-                                <div className="space-y-2">
-                                    <Label htmlFor="password">Senha</Label>
+                                    <Label htmlFor="password">Senha *</Label>
                                     <Input
                                         id="password"
                                         type="password"
@@ -434,41 +343,87 @@ export default function UsersIndexPage({ users, roles, filters }: Props) {
                                 </div>
 
                                 <div className="space-y-2">
-                                    <Label htmlFor="password_confirmation">Confirmar Senha</Label>
+                                    <Label htmlFor="password_confirmation">Confirmar Senha *</Label>
                                     <Input
                                         id="password_confirmation"
                                         type="password"
                                         value={data.password_confirmation}
-                                        onChange={(e) =>
-                                            setData('password_confirmation', e.target.value)
-                                        }
+                                        onChange={(e) => setData('password_confirmation', e.target.value)}
                                         required
                                     />
                                     {errors.password_confirmation && (
-                                        <p className="text-sm text-destructive">
-                                            {errors.password_confirmation}
-                                        </p>
+                                        <p className="text-sm text-destructive">{errors.password_confirmation}</p>
+                                    )}
+                                </div>
+
+                                <div className="space-y-2">
+                                    <Label htmlFor="role_id">Função *</Label>
+                                    <Select
+                                        value={data.role_id}
+                                        onValueChange={(value) => setData('role_id', value)}
+                                    >
+                                        <SelectTrigger>
+                                            <SelectValue placeholder="Selecione uma função" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {roles.map((role) => (
+                                                <SelectItem key={role.id} value={String(role.id)}>
+                                                    {role.name}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                    {errors.role_id && (
+                                        <p className="text-sm text-destructive">{errors.role_id}</p>
+                                    )}
+                                </div>
+
+                                <div className="space-y-2">
+                                    <Label htmlFor="company_id">Empresa *</Label>
+                                    <Select
+                                        value={data.company_id}
+                                        onValueChange={(value) => setData('company_id', value)}
+                                    >
+                                        <SelectTrigger>
+                                            <SelectValue placeholder="Selecione uma empresa" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {companies.map((company) => (
+                                                <SelectItem key={company.id} value={String(company.id)}>
+                                                    {company.name}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                    {errors.company_id && (
+                                        <p className="text-sm text-destructive">{errors.company_id}</p>
                                     )}
                                 </div>
                             </div>
 
                             <div className="space-y-2">
-                                <Label htmlFor="avatar">Foto do Usuário</Label>
-                                <Input
-                                    id="avatar"
-                                    type="file"
-                                    accept="image/*"
-                                    onChange={handleAvatarChange}
-                                />
-                                {avatarPreview && (
-                                    <div className="mt-2">
-                                        <img
-                                            src={avatarPreview}
-                                            alt="Preview"
-                                            className="h-20 w-20 rounded-full object-cover"
+                                <Label htmlFor="avatar">Foto do Perfil</Label>
+                                <div className="flex items-center gap-4">
+                                    {avatarPreview && (
+                                        <Avatar className="h-16 w-16">
+                                            <AvatarImage src={avatarPreview} alt="Preview" />
+                                            <AvatarFallback>
+                                                {data.name.charAt(0).toUpperCase() || 'U'}
+                                            </AvatarFallback>
+                                        </Avatar>
+                                    )}
+                                    <div className="flex-1">
+                                        <Input
+                                            id="avatar"
+                                            type="file"
+                                            accept="image/*"
+                                            onChange={handleAvatarChange}
                                         />
+                                        <p className="mt-1 text-xs text-muted-foreground">
+                                            JPG, PNG ou GIF (máx. 2MB)
+                                        </p>
                                     </div>
-                                )}
+                                </div>
                                 {errors.avatar && (
                                     <p className="text-sm text-destructive">{errors.avatar}</p>
                                 )}
@@ -490,8 +445,9 @@ export default function UsersIndexPage({ users, roles, filters }: Props) {
                     </DialogContent>
                 </Dialog>
 
+                {/* Edit Modal */}
                 <Dialog open={isEditModalOpen} onOpenChange={setIsEditModalOpen}>
-                    <DialogContent className="max-h-[90vh] overflow-y-auto">
+                    <DialogContent>
                         <DialogHeader>
                             <DialogTitle>Editar Usuário</DialogTitle>
                             <DialogDescription>
@@ -500,9 +456,9 @@ export default function UsersIndexPage({ users, roles, filters }: Props) {
                         </DialogHeader>
 
                         <form onSubmit={handleUpdateUser} className="space-y-6">
-                            <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+                            <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                                 <div className="space-y-2">
-                                    <Label htmlFor="edit-name">Nome</Label>
+                                    <Label htmlFor="edit-name">Nome *</Label>
                                     <Input
                                         id="edit-name"
                                         value={editData.name}
@@ -515,7 +471,7 @@ export default function UsersIndexPage({ users, roles, filters }: Props) {
                                 </div>
 
                                 <div className="space-y-2">
-                                    <Label htmlFor="edit-email">Email</Label>
+                                    <Label htmlFor="edit-email">E-mail *</Label>
                                     <Input
                                         id="edit-email"
                                         type="email"
@@ -529,7 +485,35 @@ export default function UsersIndexPage({ users, roles, filters }: Props) {
                                 </div>
 
                                 <div className="space-y-2">
-                                    <Label htmlFor="edit-role">Função</Label>
+                                    <Label htmlFor="edit-password">Senha</Label>
+                                    <Input
+                                        id="edit-password"
+                                        type="password"
+                                        value={editData.password}
+                                        onChange={(e) => setEditData('password', e.target.value)}
+                                        placeholder="Deixe vazio para manter a senha atual"
+                                    />
+                                    {editErrors.password && (
+                                        <p className="text-sm text-destructive">{editErrors.password}</p>
+                                    )}
+                                </div>
+
+                                <div className="space-y-2">
+                                    <Label htmlFor="edit-password_confirmation">Confirmar Senha</Label>
+                                    <Input
+                                        id="edit-password_confirmation"
+                                        type="password"
+                                        value={editData.password_confirmation}
+                                        onChange={(e) => setEditData('password_confirmation', e.target.value)}
+                                        placeholder="Confirme a nova senha"
+                                    />
+                                    {editErrors.password_confirmation && (
+                                        <p className="text-sm text-destructive">{editErrors.password_confirmation}</p>
+                                    )}
+                                </div>
+
+                                <div className="space-y-2">
+                                    <Label htmlFor="edit-role_id">Função *</Label>
                                     <Select
                                         value={editData.role_id}
                                         onValueChange={(value) => setEditData('role_id', value)}
@@ -539,15 +523,8 @@ export default function UsersIndexPage({ users, roles, filters }: Props) {
                                         </SelectTrigger>
                                         <SelectContent>
                                             {roles.map((role) => (
-                                                <SelectItem key={role.id} value={role.id.toString()}>
-                                                    <div className="flex flex-col">
-                                                        <span className="font-medium">{role.name}</span>
-                                                        {role.description && (
-                                                            <span className="text-xs text-muted-foreground">
-                                                                {role.description}
-                                                            </span>
-                                                        )}
-                                                    </div>
+                                                <SelectItem key={role.id} value={String(role.id)}>
+                                                    {role.name}
                                                 </SelectItem>
                                             ))}
                                         </SelectContent>
@@ -556,23 +533,40 @@ export default function UsersIndexPage({ users, roles, filters }: Props) {
                                         <p className="text-sm text-destructive">{editErrors.role_id}</p>
                                     )}
                                 </div>
+
+                                <div className="space-y-2">
+                                    <Label htmlFor="edit-company_id">Empresa *</Label>
+                                    <Select
+                                        value={editData.company_id}
+                                        onValueChange={(value) => setEditData('company_id', value)}
+                                    >
+                                        <SelectTrigger>
+                                            <SelectValue placeholder="Selecione uma empresa" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {companies.map((company) => (
+                                                <SelectItem key={company.id} value={String(company.id)}>
+                                                    {company.name}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                    {editErrors.company_id && (
+                                        <p className="text-sm text-destructive">{editErrors.company_id}</p>
+                                    )}
+                                </div>
                             </div>
 
                             <div className="space-y-2">
-                                <Label htmlFor="edit-avatar">Foto do Usuário</Label>
+                                <Label htmlFor="edit-avatar">Foto do Perfil</Label>
                                 <div className="flex items-center gap-4">
-                                    <Avatar className="h-20 w-20">
+                                    <Avatar className="h-16 w-16">
                                         <AvatarImage
                                             src={editAvatarPreview || undefined}
-                                            alt={editingUser?.name}
+                                            alt={editingUser?.name || 'User'}
                                         />
                                         <AvatarFallback>
-                                            {editingUser?.name
-                                                .split(' ')
-                                                .map((n) => n[0])
-                                                .join('')
-                                                .toUpperCase()
-                                                .slice(0, 2)}
+                                            {editData.name.charAt(0).toUpperCase() || 'U'}
                                         </AvatarFallback>
                                     </Avatar>
                                     <div className="flex-1">
@@ -583,56 +577,13 @@ export default function UsersIndexPage({ users, roles, filters }: Props) {
                                             onChange={handleEditAvatarChange}
                                         />
                                         <p className="mt-1 text-xs text-muted-foreground">
-                                            Deixe em branco para manter a foto atual
+                                            Deixe em branco para manter a foto atual. JPG, PNG ou GIF (máx. 2MB)
                                         </p>
                                     </div>
                                 </div>
                                 {editErrors.avatar && (
                                     <p className="text-sm text-destructive">{editErrors.avatar}</p>
                                 )}
-                            </div>
-
-                            <div className="rounded-md border border-muted p-4">
-                                <h3 className="mb-4 font-medium">Alterar Senha (Opcional)</h3>
-                                <p className="mb-4 text-sm text-muted-foreground">
-                                    Deixe em branco se não quiser alterar a senha
-                                </p>
-
-                                <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-                                    <div className="space-y-2">
-                                        <Label htmlFor="edit-password">Nova Senha</Label>
-                                        <Input
-                                            id="edit-password"
-                                            type="password"
-                                            value={editData.password}
-                                            onChange={(e) => setEditData('password', e.target.value)}
-                                        />
-                                        {editErrors.password && (
-                                            <p className="text-sm text-destructive">
-                                                {editErrors.password}
-                                            </p>
-                                        )}
-                                    </div>
-
-                                    <div className="space-y-2">
-                                        <Label htmlFor="edit-password_confirmation">
-                                            Confirmar Nova Senha
-                                        </Label>
-                                        <Input
-                                            id="edit-password_confirmation"
-                                            type="password"
-                                            value={editData.password_confirmation}
-                                            onChange={(e) =>
-                                                setEditData('password_confirmation', e.target.value)
-                                            }
-                                        />
-                                        {editErrors.password_confirmation && (
-                                            <p className="text-sm text-destructive">
-                                                {editErrors.password_confirmation}
-                                            </p>
-                                        )}
-                                    </div>
-                                </div>
                             </div>
 
                             <DialogFooter>
@@ -650,12 +601,6 @@ export default function UsersIndexPage({ users, roles, filters }: Props) {
                         </form>
                     </DialogContent>
                 </Dialog>
-
-                <UserViewModal
-                    user={viewingUser}
-                    open={isViewModalOpen}
-                    onOpenChange={setIsViewModalOpen}
-                />
             </div>
         </AppLayout>
     );

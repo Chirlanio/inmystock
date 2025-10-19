@@ -28,6 +28,7 @@ import {
     AlertTriangle,
     GitCompare,
     PackageX,
+    Shapes,
 } from 'lucide-react';
 import AppLogo from './app-logo';
 
@@ -146,6 +147,11 @@ export function AppSidebar() {
                     title: 'Empresas',
                     href: '/admin/companies',
                     icon: Building2,
+                },
+                {
+                    title: 'Categorias',
+                    href: '/admin/categories',
+                    icon: Shapes,
                 },
                 {
                     title: 'Logs do Sistema',

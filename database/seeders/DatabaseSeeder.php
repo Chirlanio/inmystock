@@ -18,6 +18,7 @@ class DatabaseSeeder extends Seeder
         $this->call([
             RoleSeeder::class,
             CompanySeeder::class,
+            CategorySeeder::class,
         ]);
 
         // Get first company

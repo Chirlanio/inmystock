@@ -1,17 +1,24 @@
 <?php
 
-use App\Http\Controllers\Admin\CompanyController;
-use App\Http\Controllers\Admin\SystemLogController;
+use App\Http\Controllers\Settings\AuditController;
+use App\Http\Controllers\Settings\CategoryController;
 use App\Http\Controllers\Admin\UserController;
 use Illuminate\Support\Facades\Route;
 
-Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->group(function () {
-    Route::resource('users', UserController::class);
-    Route::resource('companies', CompanyController::class);
+Route::middleware(['auth', 'role:admin'])->name('admin.')->prefix('admin')->group(function () {
+    // Categories
+    Route::get('categories', [CategoryController::class, 'index'])->name('categories.index');
+    Route::post('categories', [CategoryController::class, 'store'])->name('categories.store');
+    Route::put('categories/{category}', [CategoryController::class, 'update'])->name('categories.update');
+    Route::delete('categories/{category}', [CategoryController::class, 'destroy'])->name('categories.destroy');
 
-    // System Logs
-    Route::get('logs', [SystemLogController::class, 'index'])->name('logs.index');
-    Route::get('logs/download', [SystemLogController::class, 'download'])->name('logs.download');
-    Route::post('logs/clear', [SystemLogController::class, 'clear'])->name('logs.clear');
-    Route::delete('logs', [SystemLogController::class, 'delete'])->name('logs.delete');
+    // Users
+    Route::get('users', [UserController::class, 'index'])->name('users.index');
+    Route::post('users', [UserController::class, 'store'])->name('users.store');
+    Route::put('users/{user}', [UserController::class, 'update'])->name('users.update');
+    Route::delete('users/{user}', [UserController::class, 'destroy'])->name('users.destroy');
+
+    // Audit
+    Route::get('audit', [AuditController::class, 'index'])->name('audit.index');
+    Route::get('audit/{audit}', [AuditController::class, 'show'])->name('audit.show');
 });
