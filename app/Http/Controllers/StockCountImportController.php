@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Jobs\Import\ProcessStockCountImport;
 use App\Models\Product;
 use App\Models\StockCount;
 use App\Models\StockCountImport;
@@ -57,17 +58,17 @@ class StockCountImportController extends Controller
                 'status' => 'pending',
             ]);
 
-            // Process the file
-            $this->processImport($import);
-
             DB::commit();
+
+            // Dispatch job to process the import asynchronously
+            ProcessStockCountImport::dispatch($import);
 
             return redirect()
                 ->route('stock-counts.show', [
                     'stockAudit' => $stockCount->stock_audit_id,
                     'stockCount' => $stockCount->id
                 ])
-                ->with('success', "Arquivo importado com sucesso! {$import->successful_lines} itens processados.");
+                ->with('success', 'Arquivo recebido! O processamento será realizado em segundo plano. Você receberá uma notificação quando concluir.');
         } catch (\Exception $e) {
             DB::rollBack();
 
@@ -79,9 +80,15 @@ class StockCountImportController extends Controller
 
     /**
      * Process the import file.
+     *
+     * @deprecated This method is no longer used. Import processing is now handled by ProcessStockCountImport job.
+     * Kept for reference only.
      */
     protected function processImport(StockCountImport $import): void
     {
+        // This method is deprecated and replaced by ProcessStockCountImport job
+        // Code kept for reference only
+        return;
         $import->update([
             'status' => 'processing',
             'started_at' => now(),
