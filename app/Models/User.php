@@ -136,4 +136,25 @@ class User extends Authenticatable implements Auditable
     {
         return $this->role && $this->role->level >= $level;
     }
+
+    /**
+     * Get the user's notification preferences.
+     */
+    public function notificationPreferences(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(UserNotificationPreference::class);
+    }
+
+    /**
+     * Boot the model.
+     */
+    protected static function boot()
+    {
+        parent::boot();
+
+        // Create default notification preferences when user is created
+        static::created(function ($user) {
+            UserNotificationPreference::createDefaultsForUser($user);
+        });
+    }
 }
