@@ -393,7 +393,7 @@ export default function SystemLogsPage({
                                                                     }
                                                                     size="sm"
                                                                     onClick={() => {
-                                                                        const params: any = {
+                                                                        const params: Record<string, string | number> = {
                                                                             file: selectedFile,
                                                                             page,
                                                                         };

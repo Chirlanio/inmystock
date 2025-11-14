@@ -55,7 +55,7 @@ const eventColors: Record<string, 'default' | 'destructive' | 'outline' | 'secon
     restored: 'outline',
 };
 
-export default function AuditPage({ audits, filters: _filters }: Props) {
+export default function AuditPage({ audits }: Props) {
     const formatDate = (date: string) => {
         return new Date(date).toLocaleString('pt-BR', {
             day: '2-digit',

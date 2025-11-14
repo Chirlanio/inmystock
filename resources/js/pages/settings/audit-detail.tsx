@@ -66,7 +66,7 @@ export default function AuditDetailPage({ audit }: Props) {
         return labels[event] || event;
     };
 
-    const renderValue = (value: any) => {
+    const renderValue = (value: unknown) => {
         if (value === null || value === undefined) {
             return <span className="text-muted-foreground">null</span>;
         }

@@ -119,7 +119,8 @@ export default function ProductsIndexPage({ products, categories, filters }: Pro
     } = editForm;
 
     editForm.transform((data) => {
-        const { code: _code, ...rest } = data;
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const { code, ...rest } = data;
         return rest;
     });
 
