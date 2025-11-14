@@ -9,8 +9,12 @@ interface FlashMessages {
     info?: string;
 }
 
+interface PagePropsWithFlash {
+    flash: FlashMessages;
+}
+
 export function useToastFlash() {
-    const { flash } = usePage().props as any;
+    const { flash } = usePage<PagePropsWithFlash>().props;
 
     useEffect(() => {
         const messages = flash as FlashMessages;

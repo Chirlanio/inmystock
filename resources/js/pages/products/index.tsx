@@ -1,6 +1,7 @@
 import { LucideIcon } from '@/components/lucide-icon';
 import { ProductViewModal } from '@/components/product-view-modal';
 import { Column, DataTable } from '@/components/data-table';
+import * as LucideIcons from 'lucide-react';
 import HeadingSmall from '@/components/heading-small';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -77,7 +78,7 @@ export default function ProductsIndexPage({ products, categories, filters }: Pro
         }, 500);
 
         return () => clearTimeout(timer);
-    }, [search, activeFilter, categoryFilter]);
+    }, [search, activeFilter, categoryFilter, filters.sort, filters.direction]);
 
     const { data, setData, post, processing, errors, reset } = useForm({
         name: '',
@@ -118,6 +119,7 @@ export default function ProductsIndexPage({ products, categories, filters }: Pro
     } = editForm;
 
     editForm.transform((data) => {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const { code, ...rest } = data;
         return rest;
     });
@@ -243,7 +245,7 @@ export default function ProductsIndexPage({ products, categories, filters }: Pro
                         {product.category && (
                             <p className="flex items-center gap-1 text-sm text-muted-foreground">
                                 {product.category.icon && (
-                                    <LucideIcon name={product.category.icon as any} className="h-4 w-4" />
+                                    <LucideIcon name={product.category.icon as keyof typeof LucideIcons} className="h-4 w-4" />
                                 )}
                                 {product.category.name}
                             </p>
@@ -346,7 +348,7 @@ export default function ProductsIndexPage({ products, categories, filters }: Pro
                                         <SelectItem key={category.id} value={String(category.id)}>
                                             <div className="flex items-center gap-2">
                                                 {category.icon && (
-                                                    <LucideIcon name={category.icon as any} className="h-5 w-5" />
+                                                    <LucideIcon name={category.icon as keyof typeof LucideIcons} className="h-5 w-5" />
                                                 )}
                                                 <span>{category.name}</span>
                                             </div>
@@ -429,6 +431,33 @@ export default function ProductsIndexPage({ products, categories, filters }: Pro
                                 </div>
 
                                 <div className="space-y-2">
+                                    <Label htmlFor="category_id">Categoria</Label>
+                                    <Select
+                                        value={data.category_id}
+                                        onValueChange={(value) => setData('category_id', value)}
+                                    >
+                                        <SelectTrigger>
+                                            <SelectValue placeholder="Selecione uma categoria" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {categories.map((category) => (
+                                                <SelectItem
+                                                    key={category.id}
+                                                    value={String(category.id)}
+                                                >
+                                                    <div className="flex items-center gap-2">
+                                                        {category.icon && (
+                                                            <LucideIcon name={category.icon as keyof typeof LucideIcons} className="h-5 w-5" />
+                                                        )}
+                                                        <span>{category.name}</span>
+                                                    </div>
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                    {errors.category_id && (
+                                        <p className="text-sm text-destructive">{errors.category_id}</p>
+                                    )}
                                          <Label htmlFor="category_id">Categoria</Label>
                                          <Select
                                              value={data.category_id}
@@ -445,7 +474,7 @@ export default function ProductsIndexPage({ products, categories, filters }: Pro
                                                      >
                                                          <div className="flex items-center gap-2">
                                                              {category.icon && (
-                                                                 <LucideIcon name={category.icon as any} className="h-5 w-5" />
+                                                                 <LucideIcon name={category.icon as keyof typeof LucideIcons} className="h-5 w-5" />
                                                              )}
                                                              <span>{category.name}</span>
                                                          </div>
@@ -665,7 +694,7 @@ export default function ProductsIndexPage({ products, categories, filters }: Pro
                                                 >
                                                     <div className="flex items-center gap-2">
                                                         {category.icon && (
-                                                            <LucideIcon name={category.icon as any} className="h-5 w-5" />
+                                                            <LucideIcon name={category.icon as keyof typeof LucideIcons} className="h-5 w-5" />
                                                         )}
                                                         <span>{category.name}</span>
                                                     </div>

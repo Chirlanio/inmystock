@@ -9,13 +9,14 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Fortify\TwoFactorAuthenticatable;
+use Laravel\Sanctum\HasApiTokens;
 use OwenIt\Auditing\Contracts\Auditable;
 use OwenIt\Auditing\Auditable as AuditableTrait;
 
 class User extends Authenticatable implements Auditable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable, TwoFactorAuthenticatable, AuditableTrait, SoftDeletes;
+    use HasFactory, Notifiable, TwoFactorAuthenticatable, AuditableTrait, SoftDeletes, HasApiTokens;
 
     /**
      * The attributes that are mass assignable.
@@ -135,5 +136,26 @@ class User extends Authenticatable implements Auditable
     public function hasLevel(int $level): bool
     {
         return $this->role && $this->role->level >= $level;
+    }
+
+    /**
+     * Get the user's notification preferences.
+     */
+    public function notificationPreferences(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(UserNotificationPreference::class);
+    }
+
+    /**
+     * Boot the model.
+     */
+    protected static function boot()
+    {
+        parent::boot();
+
+        // Create default notification preferences when user is created
+        static::created(function ($user) {
+            UserNotificationPreference::createDefaultsForUser($user);
+        });
     }
 }

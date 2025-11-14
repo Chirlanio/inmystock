@@ -32,6 +32,7 @@ import {
     Search,
     Trash2,
     XCircle,
+    type LucideIcon,
 } from 'lucide-react';
 import { FormEvent, useState } from 'react';
 
@@ -72,7 +73,7 @@ interface Props {
 
 const levelColors: Record<
     string,
-    { variant: 'default' | 'destructive' | 'outline' | 'secondary'; icon: any }
+    { variant: 'default' | 'destructive' | 'outline' | 'secondary'; icon: LucideIcon }
 > = {
     DEBUG: { variant: 'secondary', icon: Info },
     INFO: { variant: 'default', icon: CheckCircle },
@@ -101,7 +102,7 @@ export default function SystemLogsPage({
 
     const handleFilter = (e: FormEvent) => {
         e.preventDefault();
-        const params: any = {};
+        const params: Record<string, string> = {};
 
         if (selectedFile) params.file = selectedFile;
         if (levelFilter !== 'all') params.level = levelFilter;
@@ -392,7 +393,7 @@ export default function SystemLogsPage({
                                                                     }
                                                                     size="sm"
                                                                     onClick={() => {
-                                                                        const params: any = {
+                                                                        const params: Record<string, string | number> = {
                                                                             file: selectedFile,
                                                                             page,
                                                                         };

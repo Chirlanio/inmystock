@@ -69,7 +69,6 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   ) => {
     const Comp = asChild ? Slot : "button"
 
-    const isIconOnly = !children && (leftIcon || rightIcon)
     const iconSize = size === "sm" || size === "icon-sm" ? "size-3.5" : size === "lg" || size === "xl" || size === "icon-lg" ? "size-5" : "size-4"
 
     // Se asChild for true, não podemos usar leftIcon/rightIcon ou loading

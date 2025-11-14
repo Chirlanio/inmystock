@@ -2,6 +2,7 @@ import { Column, DataTable } from '@/components/data-table';
 import HeadingSmall from '@/components/heading-small';
 import { iconList } from '@/components/icon-list';
 import { LucideIcon } from '@/components/lucide-icon';
+import * as LucideIcons from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import {
@@ -118,7 +119,7 @@ export default function CategoriesIndexPage({ categories, filters }: Props) {
             label: 'Nome',
             render: (category) => (
                 <div className="flex items-center gap-2">
-                    {category.icon && <LucideIcon name={category.icon as any} className="h-5 w-5" />}
+                    {category.icon && <LucideIcon name={category.icon as keyof typeof LucideIcons} className="h-5 w-5" />}
                     <span>{category.name}</span>
                 </div>
             ),
@@ -238,7 +239,7 @@ export default function CategoriesIndexPage({ categories, filters }: Props) {
                                         {iconList.map((icon) => (
                                             <SelectItem key={icon} value={icon}>
                                                 <div className="flex items-center gap-2">
-                                                    <LucideIcon name={icon as any} className="h-5 w-5" />
+                                                    <LucideIcon name={icon as keyof typeof LucideIcons} className="h-5 w-5" />
                                                     <span>{icon}</span>
                                                 </div>
                                             </SelectItem>
@@ -300,7 +301,7 @@ export default function CategoriesIndexPage({ categories, filters }: Props) {
                                         {iconList.map((icon) => (
                                             <SelectItem key={icon} value={icon}>
                                                 <div className="flex items-center gap-2">
-                                                    <LucideIcon name={icon as any} className="h-5 w-5" />
+                                                    <LucideIcon name={icon as keyof typeof LucideIcons} className="h-5 w-5" />
                                                     <span>{icon}</span>
                                                 </div>
                                             </SelectItem>
