@@ -9,6 +9,7 @@ import { show } from '@/routes/two-factor';
 import { type NavItem } from '@/types';
 import { Link } from '@inertiajs/react';
 import { type PropsWithChildren } from 'react';
+import { route } from '@/lib/route';
 
 const sidebarNavItems: NavItem[] = [
     {
@@ -33,7 +34,7 @@ const sidebarNavItems: NavItem[] = [
     },
     {
         title: 'Auditoria',
-        href: '/settings/audit',
+        href: route('audit.index'),
         icon: null,
     },
 ];

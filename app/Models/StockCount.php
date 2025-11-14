@@ -20,12 +20,15 @@ class StockCount extends Model implements Auditable
         'status',
         'started_at',
         'completed_at',
+        'adjustments_applied_at',
+        'adjustments_applied_by',
         'notes',
     ];
 
     protected $casts = [
         'started_at' => 'datetime',
         'completed_at' => 'datetime',
+        'adjustments_applied_at' => 'datetime',
         'count_number' => 'integer',
     ];
 

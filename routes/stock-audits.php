@@ -27,6 +27,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
         // Count actions
         Route::post('counts/{stockCount}/start', [StockCountController::class, 'start'])->where('stockCount', '[0-9]+')->name('start');
         Route::post('counts/{stockCount}/complete', [StockCountController::class, 'complete'])->where('stockCount', '[0-9]+')->name('complete');
+
+        // Count comparison
+        Route::get('counts/{stockCount}/comparison', [StockCountController::class, 'comparison'])->where('stockCount', '[0-9]+')->name('comparison');
+        Route::get('counts/{stockCount}/comparison/export', [StockCountController::class, 'exportComparison'])->where('stockCount', '[0-9]+')->name('comparison.export');
+        Route::post('counts/{stockCount}/apply-adjustments', [StockCountController::class, 'applyAdjustments'])->where('stockCount', '[0-9]+')->name('apply-adjustments');
     });
 
     // Stock Count Imports and direct access routes
