@@ -430,6 +430,14 @@ export default function ProductsIndexPage({ products, categories, filters }: Pro
 
                                 <div className="space-y-2">
                                     <Label htmlFor="category_id">Categoria</Label>
+                                    <Select
+                                        value={data.category_id}
+                                        onValueChange={(value) => setData('category_id', value)}
+                                    >
+                                        <SelectTrigger>
+                                            <SelectValue placeholder="Selecione uma categoria" />
+                                        </SelectTrigger>
+                                        <SelectContent>
                                             {categories.map((category) => (
                                                 <SelectItem
                                                     key={category.id}
