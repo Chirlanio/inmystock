@@ -12,8 +12,8 @@ interface Audit {
     event: string;
     auditable_type: string;
     auditable_id: number;
-    old_values: Record<string, any>;
-    new_values: Record<string, any>;
+    old_values: Record<string, unknown>;
+    new_values: Record<string, unknown>;
     url: string;
     ip_address: string;
     user_agent: string;
@@ -25,7 +25,7 @@ interface Audit {
     };
     auditable?: {
         id: number;
-        [key: string]: any;
+        [key: string]: unknown;
     };
 }
 

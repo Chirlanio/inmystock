@@ -66,7 +66,7 @@ export default function AreasIndexPage({ areas, filters }: Props) {
         }, 500);
 
         return () => clearTimeout(timer);
-    }, [search, activeFilter]);
+    }, [search, activeFilter, filters.sort, filters.direction]);
 
     const { data, setData, post, processing, errors, reset } = useForm({
         name: '',
