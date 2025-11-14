@@ -98,6 +98,6 @@ class AuthenticationTest extends TestCase
 
         $errors = session('errors');
 
-        $this->assertStringContainsString('Too many login attempts', $errors->first('email'));
+        $this->assertStringContainsString('Muitas tentativas de login', $errors->first('email'));
     }
 }
