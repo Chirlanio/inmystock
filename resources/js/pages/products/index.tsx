@@ -456,6 +456,33 @@ export default function ProductsIndexPage({ products, categories, filters }: Pro
                                     {errors.category_id && (
                                         <p className="text-sm text-destructive">{errors.category_id}</p>
                                     )}
+                                         <Label htmlFor="category_id">Categoria</Label>
+                                         <Select
+                                             value={data.category_id}
+                                             onValueChange={(value) => setData('category_id', value)}
+                                         >
+                                             <SelectTrigger>
+                                                 <SelectValue placeholder="Selecione uma categoria" />
+                                             </SelectTrigger>
+                                             <SelectContent>
+                                                 {categories.map((category) => (
+                                                     <SelectItem
+                                                         key={category.id}
+                                                         value={String(category.id)}
+                                                     >
+                                                         <div className="flex items-center gap-2">
+                                                             {category.icon && (
+                                                                 <LucideIcon name={category.icon as any} className="h-5 w-5" />
+                                                             )}
+                                                             <span>{category.name}</span>
+                                                         </div>
+                                                     </SelectItem>
+                                                 ))}
+                                             </SelectContent>
+                                         </Select>
+                                         {errors.category_id && (
+                                             <p className="text-sm text-destructive">{errors.category_id}</p>
+                                         )}
                                 </div>
 
                                 <div className="space-y-2">
