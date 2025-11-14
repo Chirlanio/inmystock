@@ -13,7 +13,7 @@ import {
 import { useToastFlash } from '@/hooks/use-toast-flash';
 import AppLayout from '@/layouts/app-layout';
 import { Head, Link, router } from '@inertiajs/react';
-import { Edit, FileText, History, Upload } from 'lucide-react';
+import { BarChart3, Edit, FileText, History, Upload } from 'lucide-react';
 
 interface StockCountItem {
     id: number;
@@ -108,6 +108,16 @@ export default function ShowStockCountPage({ stockCount }: Props) {
                                 ← Voltar
                             </Link>
                         </Button>
+                        {stockCount.items.length > 0 && (
+                            <Button asChild>
+                                <Link
+                                    href={`/stock-audits/${stockCount.stock_audit.id}/counts/${stockCount.id}/comparison`}
+                                >
+                                    <BarChart3 className="mr-2 h-4 w-4" />
+                                    Ver Comparação
+                                </Link>
+                            </Button>
+                        )}
                         {stockCount.status !== 'completed' && (
                             <>
                                 <Button variant="outline" asChild>

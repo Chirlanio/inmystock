@@ -2,6 +2,7 @@
 
 namespace App\Jobs\Import;
 
+use App\Models\Product;
 use App\Models\StockCountImport;
 use App\Models\StockCountItem;
 use App\Notifications\Import\ImportCompleted;
@@ -123,6 +124,27 @@ class ProcessStockCountImport implements ShouldQueue
                     // Convert quantity
                     $quantity = (float) str_replace(',', '.', $quantity);
 
+                    // Try to find product by code or barcode
+                    $product = Product::where('code', $productCode)
+                        ->orWhere('barcode', $productCode)
+                        ->first();
+
+                    // Prepare item data
+                    $itemData = [
+                        'quantity_counted' => $quantity,
+                        'notes' => $notes ?: null,
+                    ];
+
+                    // Enrich with product data if found
+                    if ($product) {
+                        $itemData['product_name'] = $product->name;
+                        $itemData['unit'] = $product->unit;
+                    } else {
+                        // Product not found - use code as name
+                        $itemData['product_name'] = $productCode;
+                        $itemData['unit'] = 'UN';
+                    }
+
                     // Create or update stock count item
                     StockCountItem::updateOrCreate(
                         [
@@ -130,12 +152,7 @@ class ProcessStockCountImport implements ShouldQueue
                             'product_code' => $productCode,
                             'location' => $location ?: null,
                         ],
-                        [
-                            'product_name' => $productCode, // Will be updated later if product exists
-                            'quantity_counted' => $quantity,
-                            'unit' => 'UN', // Default unit
-                            'notes' => $notes ?: null,
-                        ]
+                        $itemData
                     );
 
                     $successfulLines++;
